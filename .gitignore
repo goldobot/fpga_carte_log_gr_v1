@@ -1,6 +1,8 @@
 /src/version.vhd.tmp
 /src/version.vhd.body
 /src/version.vhd
+/altera_quartus/output_files/RobotLeon2.sof
+/altera_quartus/output_files/RobotLeon2.jic
 .depend
 Make.dep
 *.o
