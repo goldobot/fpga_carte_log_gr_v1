@@ -6,12 +6,12 @@
 rm -rf ./altera_quartus/db
 rm -rf ./altera_quartus/incremental_db
 mv ./altera_quartus/output_files/RobotLeon2.cdf .
-mv ./altera_quartus/output_files/RobotLeon2.sof .
-mv ./altera_quartus/output_files/RobotLeon2.jic .
+#mv ./altera_quartus/output_files/RobotLeon2.sof .
+#mv ./altera_quartus/output_files/RobotLeon2.jic .
 rm -f ./altera_quartus/output_files/*
 mv ./RobotLeon2.cdf ./altera_quartus/output_files/
-mv ./RobotLeon2.sof ./altera_quartus/output_files/
-mv ./RobotLeon2.jic ./altera_quartus/output_files/
+#mv ./RobotLeon2.sof ./altera_quartus/output_files/
+#mv ./RobotLeon2.jic ./altera_quartus/output_files/
 rm -rf ./src/version.vhd.body
 rm -rf ./src/version.vhd.tmp
 rm -rf ./src/version.vhd
