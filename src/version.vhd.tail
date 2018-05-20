@@ -1,0 +1,9 @@
+";
+
+end FPGA_VERSION;
+
+package body FPGA_VERSION is
+
+end FPGA_VERSION;
+
+

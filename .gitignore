@@ -1,0 +1,15 @@
+/src/version.vhd.tmp
+/src/version.vhd.body
+/src/version.vhd
+.depend
+Make.dep
+*.o
+*.a
+*.d
+*.i
+*~
+.swp
+.*.swp
+core
+.gdbinit
+cscope.out
