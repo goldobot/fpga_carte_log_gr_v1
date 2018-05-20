@@ -24,7 +24,10 @@ entity PUMP is
     PWM_PUMP_PW        : in std_logic_vector (31 downto 0);
 
     -- the PWM signal 
-    PWM_PUMP           : out std_logic
+    PWM_PUMP           : out std_logic;
+
+    -- the sense 
+    DIR_PUMP           : out std_logic
   );
 end PUMP;
 
@@ -48,6 +51,9 @@ architecture arch of PUMP is
 signal iRESET               : std_logic;
 signal iCLK                 : std_logic;
 
+signal iINV_PWM_PUMP_PW      : std_logic_vector (31 downto 0);
+signal iABS_PWM_PUMP_PW      : std_logic_vector (31 downto 0);
+
 signal iPWM_PUMP_PERIOD     : std_logic_vector (31 downto 0);
 signal iPWM_PUMP_PW_MAX     : std_logic_vector (31 downto 0);
 signal iPWM_COUNT_PUMP      : std_logic_vector (31 downto 0);
@@ -62,6 +68,11 @@ iCLK <= CLK;
 iPWM_PUMP_PERIOD <= PWM_PUMP_PERIOD;
 PWM_PUMP <= iPWM_PUMP;
 
+DIR_PUMP <= PWM_PUMP_PW(31);
+iINV_PWM_PUMP_PW <= X"00000000" - PWM_PUMP_PW;
+iABS_PWM_PUMP_PW <= PWM_PUMP_PW when (PWM_PUMP_PW(31)='0') else
+                    iINV_PWM_PUMP_PW;
+
 p_PwmPumpSM : process (iCLK, iRESET)
 begin
   if (iRESET = '1') then
@@ -70,10 +81,10 @@ begin
     iPWM_PUMP_PW_MAX <= (others => '0');
   elsif (iCLK'event and iCLK = '1') then
 -- FIXME : TODO : limite arbitraire..
-    if PWM_PUMP_PW > X"000003FF" then
+    if iABS_PWM_PUMP_PW > X"000003FF" then
       iPWM_PUMP_PW_MAX <= X"000003FF";
     else
-      iPWM_PUMP_PW_MAX <= PWM_PUMP_PW;
+      iPWM_PUMP_PW_MAX <= iABS_PWM_PUMP_PW;
     end if;
     if iPWM_COUNT_PUMP = iPWM_PUMP_PERIOD then
       iPWM_COUNT_PUMP <= (others => '0');

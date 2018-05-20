@@ -126,13 +126,15 @@ set_location_assignment PIN_N12 -to PWM_SERVO9
 set_location_assignment PIN_P9  -to PWM_SERVO10
 set_location_assignment PIN_P11 -to PWM_SERVO11
 
-# ----------------
-# PWM & GPIO pompe
-# ----------------
+# ----------------------------
+# PWM & GPIO pompes et moteurs
+# ----------------------------
 set_location_assignment PIN_A6  -to PWM_POMPE0
 set_location_assignment PIN_D6  -to DIR_POMPE0
 set_location_assignment PIN_B6  -to PWM_POMPE1
 set_location_assignment PIN_B7  -to DIR_POMPE1
+set_location_assignment PIN_A5  -to PWM_MOTOR2
+set_location_assignment PIN_D5  -to DIR_MOTOR2
 
 # -------
 # STEPPER
@@ -157,8 +159,8 @@ set_location_assignment PIN_A3  -to GPIO_003
 set_location_assignment PIN_B4  -to GPIO_005
 set_location_assignment PIN_A4  -to GPIO_006
 set_location_assignment PIN_B5  -to GPIO_007
-set_location_assignment PIN_A5  -to GPIO_008
-set_location_assignment PIN_D5  -to GPIO_009
+#set_location_assignment PIN_A5  -to GPIO_008
+#set_location_assignment PIN_D5  -to GPIO_009
 #set_location_assignment PIN_B6  -to GPIO_010
 #set_location_assignment PIN_A6  -to GPIO_011
 #set_location_assignment PIN_B7  -to GPIO_012

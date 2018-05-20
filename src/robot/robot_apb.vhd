@@ -44,7 +44,11 @@ entity robot_apb is
     ; pwm_servo10         : out std_logic
     ; pwm_servo11         : out std_logic
     ; pwm_pump0           : out std_logic
+    ; dir_pump0           : out std_logic
     ; pwm_pump1           : out std_logic
+    ; dir_pump1           : out std_logic
+    ; pwm_motor2          : out std_logic
+    ; dir_motor2          : out std_logic
     ; stp_0_step          : out std_logic
     ; stp_0_dir           : out std_logic
     ; stp_1_step          : out std_logic
@@ -94,7 +98,8 @@ architecture rtl of robot_apb is
       CLK                : in std_logic;
       PWM_PUMP_PERIOD    : in std_logic_vector (31 downto 0);
       PWM_PUMP_PW        : in std_logic_vector (31 downto 0);
-      PWM_PUMP           : out std_logic
+      PWM_PUMP           : out std_logic;
+      DIR_PUMP           : out std_logic
       );
   end component;
 
@@ -215,6 +220,8 @@ end component;
   signal iPUMP0_PW            : std_logic_vector (31 downto 0);
   signal iPUMP1_PWM_PERIOD    : std_logic_vector (31 downto 0);
   signal iPUMP1_PW            : std_logic_vector (31 downto 0);
+  signal iMOTOR2_PWM_PERIOD   : std_logic_vector (31 downto 0);
+  signal iMOTOR2_PW           : std_logic_vector (31 downto 0);
 
   signal iSTP_POL_0_CTRL      : std_logic_vector (15 downto 0);
   signal iSTP_POL_0_PERIOD    : std_logic_vector (15 downto 0);
@@ -415,7 +422,8 @@ begin
       CLK => pclk,
       PWM_PUMP_PERIOD => iPUMP0_PWM_PERIOD,
       PWM_PUMP_PW => iPUMP0_PW,
-      PWM_PUMP => pwm_pump0
+      PWM_PUMP => pwm_pump0,
+      DIR_PUMP => dir_pump0
     );
 
   c_pump1 : PUMP
@@ -424,7 +432,18 @@ begin
       CLK => pclk,
       PWM_PUMP_PERIOD => iPUMP1_PWM_PERIOD,
       PWM_PUMP_PW => iPUMP1_PW,
-      PWM_PUMP => pwm_pump1
+      PWM_PUMP => pwm_pump1,
+      DIR_PUMP => dir_pump1
+    );
+
+  c_motor2 : PUMP
+    port map (
+      RESET => iRESET,
+      CLK => pclk,
+      PWM_PUMP_PERIOD => iMOTOR2_PWM_PERIOD,
+      PWM_PUMP_PW => iMOTOR2_PW,
+      PWM_PUMP => pwm_motor2,
+      DIR_PUMP => dir_motor2
     );
 
   c_stepper_pololu0 : STEPPER_POLOLU
@@ -592,6 +611,8 @@ begin
       iPUMP0_PW          <= (others => '0');
       iPUMP1_PWM_PERIOD  <= X"00000200";
       iPUMP1_PW          <= (others => '0');
+      iMOTOR2_PWM_PERIOD <= X"00000200";
+      iMOTOR2_PW         <= (others => '0');
 
       iTRACE_FIFO        <= (others => '0');
       iTRACE_FIFO_WR     <= '0';
@@ -749,24 +770,22 @@ begin
             null; -- <available>
 
           when "0011001000" => -- 0x80008320 -- robot_reg[0xc8]
-            iSTP_POL_0_PERIOD   <= iMST_WDATA(31 downto 16);
-            iSTP_POL_0_CTRL     <= iMST_WDATA(15 downto 0);
+            null; -- <available>
           when "0011001001" => -- 0x80008324 -- robot_reg[0xc9]
-            iSTP_POL_0_NEW_POS  <= iMST_WDATA(15 downto 0);
+            null; -- <available>
           when "0011001010" => -- 0x80008328 -- robot_reg[0xca]
-            iSTP_POL_1_PERIOD   <= iMST_WDATA(31 downto 16);
-            iSTP_POL_1_CTRL     <= iMST_WDATA(15 downto 0);
+            null; -- <available>
           when "0011001011" => -- 0x8000832c -- robot_reg[0xcb]
-            iSTP_POL_1_NEW_POS  <= iMST_WDATA(15 downto 0);
+            null; -- <available>
 
           when "0011001100" => -- 0x80008330 -- robot_reg[0xcc]
-            iPUMP0_PWM_PERIOD <= iMST_WDATA;
+            null; -- <available>
           when "0011001101" => -- 0x80008334 -- robot_reg[0xcd]
-            iPUMP0_PW         <= iMST_WDATA;
+            null; -- <available>
           when "0011001110" => -- 0x80008338 -- robot_reg[0xce]
-            iPUMP1_PWM_PERIOD <= iMST_WDATA;
+            null; -- <available>
           when "0011001111" => -- 0x8000833c -- robot_reg[0xcf]
-            iPUMP1_PW         <= iMST_WDATA;
+            null; -- <available>
 
           -- was gps in 2016
           when "0011010000" => -- 0x80008340 -- robot_reg[0xd0]
@@ -853,6 +872,68 @@ begin
             iSERVO11_PWM_PERIOD <= iMST_WDATA;
           when "0100010111" => -- 0x8000845c -- robot_reg[0x117]
             iSERVO11_PW         <= iMST_WDATA;
+          when "0100011000" => -- 0x80008460 -- robot_reg[0x118]
+            null; -- <available>
+          when "0100011001" => -- 0x80008464 -- robot_reg[0x119]
+            null; -- <available>
+          when "0100011010" => -- 0x80008468 -- robot_reg[0x11a]
+            null; -- <available>
+          when "0100011011" => -- 0x8000846c -- robot_reg[0x11b]
+            null; -- <available>
+          when "0100011100" => -- 0x80008470 -- robot_reg[0x11c]
+            null; -- <available>
+          when "0100011101" => -- 0x80008474 -- robot_reg[0x11d]
+            null; -- <available>
+          when "0100011110" => -- 0x80008478 -- robot_reg[0x11e]
+            null; -- <available>
+          when "0100011111" => -- 0x8000847c -- robot_reg[0x11f]
+            null; -- <available>
+
+          -- MOTEURS CC PETIT ROBOT 2018
+          when "0100100000" => -- 0x80008480 -- robot_reg[0x120]
+            iPUMP0_PWM_PERIOD <= iMST_WDATA;
+          when "0100100001" => -- 0x80008484 -- robot_reg[0x121]
+            iPUMP0_PW         <= iMST_WDATA;
+          when "0100100010" => -- 0x80008488 -- robot_reg[0x122]
+            iPUMP1_PWM_PERIOD <= iMST_WDATA;
+          when "0100100011" => -- 0x8000848c -- robot_reg[0x123]
+            iPUMP1_PW         <= iMST_WDATA;
+          when "0100100100" => -- 0x80008490 -- robot_reg[0x124]
+            iMOTOR2_PWM_PERIOD <= iMST_WDATA;
+          when "0100100101" => -- 0x80008494 -- robot_reg[0x125]
+            iMOTOR2_PW         <= iMST_WDATA;
+          when "0100100110" => -- 0x80008498 -- robot_reg[0x126]
+            null; -- <available>
+          when "0100100111" => -- 0x8000849c -- robot_reg[0x127]
+            null; -- <available>
+          when "0100101000" => -- 0x800084a0 -- robot_reg[0x128]
+            null; -- <available>
+          when "0100101001" => -- 0x800084a4 -- robot_reg[0x129]
+            null; -- <available>
+          when "0100101010" => -- 0x800084a8 -- robot_reg[0x12a]
+            null; -- <available>
+          when "0100101011" => -- 0x800084ac -- robot_reg[0x12b]
+            null; -- <available>
+          when "0100101100" => -- 0x800084b0 -- robot_reg[0x12c]
+            null; -- <available>
+          when "0100101101" => -- 0x800084b4 -- robot_reg[0x12d]
+            null; -- <available>
+          when "0100101110" => -- 0x800084b8 -- robot_reg[0x12e]
+            null; -- <available>
+          when "0100101111" => -- 0x800084bc -- robot_reg[0x12f]
+            null; -- <available>
+
+          -- MOTEURS STEPPER PETIT ROBOT 2018
+          when "0100110000" => -- 0x800084c0 -- robot_reg[0x130]
+            iSTP_POL_0_PERIOD   <= iMST_WDATA(31 downto 16);
+            iSTP_POL_0_CTRL     <= iMST_WDATA(15 downto 0);
+          when "0100110001" => -- 0x800084c4 -- robot_reg[0x131]
+            iSTP_POL_0_NEW_POS  <= iMST_WDATA(15 downto 0);
+          when "0100110010" => -- 0x800084c8 -- robot_reg[0x132]
+            iSTP_POL_1_PERIOD   <= iMST_WDATA(31 downto 16);
+            iSTP_POL_1_CTRL     <= iMST_WDATA(15 downto 0);
+          when "0100110011" => -- 0x800084cc -- robot_reg[0x133]
+            iSTP_POL_1_NEW_POS  <= iMST_WDATA(15 downto 0);
 
           when others =>
         end case;
@@ -1036,22 +1117,22 @@ begin
           iMST_RDATA <= (others => '0');
 
         when "0011001000" => -- 0x80008320 -- robot_reg[0xc8]
-          iMST_RDATA <= iSTP_POL_0_PERIOD & iSTP_POL_0_CTRL;
+          iMST_RDATA <= (others => '0');
         when "0011001001" => -- 0x80008324 -- robot_reg[0xc9]
-          iMST_RDATA <= iSTP_POL_0_ACT_POS & iSTP_POL_0_NEW_POS;
+          iMST_RDATA <= (others => '0');
         when "0011001010" => -- 0x80008328 -- robot_reg[0xca]
-          iMST_RDATA <= iSTP_POL_1_PERIOD & iSTP_POL_1_CTRL;
+          iMST_RDATA <= (others => '0');
         when "0011001011" => -- 0x8000832c -- robot_reg[0xcb]
-          iMST_RDATA <= iSTP_POL_1_ACT_POS & iSTP_POL_1_NEW_POS;
+          iMST_RDATA <= (others => '0');
 
         when "0011001100" => -- 0x80008330 -- robot_reg[0xcc]
-          iMST_RDATA <= iPUMP0_PWM_PERIOD;
+          iMST_RDATA <= (others => '0');
         when "0011001101" => -- 0x80008334 -- robot_reg[0xcd]
-          iMST_RDATA <= iPUMP0_PW;
+          iMST_RDATA <= (others => '0');
         when "0011001110" => -- 0x80008338 -- robot_reg[0xce]
-          iMST_RDATA <= iPUMP1_PWM_PERIOD;
+          iMST_RDATA <= (others => '0');
         when "0011001111" => -- 0x8000833c -- robot_reg[0xcf]
-          iMST_RDATA <= iPUMP1_PW;
+          iMST_RDATA <= (others => '0');
 
         -- was gps in 2016
         when "0011010000" => -- 0x80008340 -- robot_reg[0xd0]
@@ -1089,7 +1170,7 @@ begin
         when "0011011111" => -- 0x8000837c -- robot_reg[0xdf]
           iMST_RDATA <= (others => '0');
 
-          -- SERVO PETIT ROBOT 2018
+        -- SERVO PETIT ROBOT 2018
         when "0100000000" => -- 0x80008400 -- robot_reg[0x100]
           iMST_RDATA <= iSERVO0_PWM_PERIOD;
         when "0100000001" => -- 0x80008404 -- robot_reg[0x101]
@@ -1138,6 +1219,67 @@ begin
           iMST_RDATA <= iSERVO11_PWM_PERIOD;
         when "0100010111" => -- 0x8000845c -- robot_reg[0x117]
           iMST_RDATA <= iSERVO11_PW;
+        when "0100011000" => -- 0x80008460 -- robot_reg[0x118]
+          iMST_RDATA <= (others => '0');
+        when "0100011001" => -- 0x80008464 -- robot_reg[0x119]
+          iMST_RDATA <= (others => '0');
+        when "0100011010" => -- 0x80008468 -- robot_reg[0x11a]
+          iMST_RDATA <= (others => '0');
+        when "0100011011" => -- 0x8000846c -- robot_reg[0x11b]
+          iMST_RDATA <= (others => '0');
+        when "0100011100" => -- 0x80008470 -- robot_reg[0x11c]
+          iMST_RDATA <= (others => '0');
+        when "0100011101" => -- 0x80008474 -- robot_reg[0x11d]
+          iMST_RDATA <= (others => '0');
+        when "0100011110" => -- 0x80008478 -- robot_reg[0x11e]
+          iMST_RDATA <= (others => '0');
+        when "0100011111" => -- 0x8000847c -- robot_reg[0x11f]
+          iMST_RDATA <= (others => '0');
+
+        -- MOTEURS CC PETIT ROBOT 2018
+        when "0100100000" => -- 0x80008480 -- robot_reg[0x120]
+          iMST_RDATA <= iPUMP0_PWM_PERIOD;
+        when "0100100001" => -- 0x80008484 -- robot_reg[0x121]
+          iMST_RDATA <= iPUMP0_PW;
+        when "0100100010" => -- 0x80008488 -- robot_reg[0x122]
+          iMST_RDATA <= iPUMP1_PWM_PERIOD;
+        when "0100100011" => -- 0x8000848c -- robot_reg[0x123]
+          iMST_RDATA <= iPUMP1_PW;
+        when "0100100100" => -- 0x80008490 -- robot_reg[0x124]
+          iMST_RDATA <= iMOTOR2_PWM_PERIOD;
+        when "0100100101" => -- 0x80008494 -- robot_reg[0x125]
+          iMST_RDATA <= iMOTOR2_PW;
+        when "0100100110" => -- 0x80008498 -- robot_reg[0x126]
+          iMST_RDATA <= (others => '0');
+        when "0100100111" => -- 0x8000849c -- robot_reg[0x127]
+          iMST_RDATA <= (others => '0');
+        when "0100101000" => -- 0x800084a0 -- robot_reg[0x128]
+          iMST_RDATA <= (others => '0');
+        when "0100101001" => -- 0x800084a4 -- robot_reg[0x129]
+          iMST_RDATA <= (others => '0');
+        when "0100101010" => -- 0x800084a8 -- robot_reg[0x12a]
+          iMST_RDATA <= (others => '0');
+        when "0100101011" => -- 0x800084ac -- robot_reg[0x12b]
+          iMST_RDATA <= (others => '0');
+        when "0100101100" => -- 0x800084b0 -- robot_reg[0x12c]
+          iMST_RDATA <= (others => '0');
+        when "0100101101" => -- 0x800084b4 -- robot_reg[0x12d]
+          iMST_RDATA <= (others => '0');
+        when "0100101110" => -- 0x800084b8 -- robot_reg[0x12e]
+          iMST_RDATA <= (others => '0');
+        when "0100101111" => -- 0x800084bc -- robot_reg[0x12f]
+          iMST_RDATA <= (others => '0');
+
+        -- MOTEURS STEPPER PETIT ROBOT 2018
+        when "0100110000" => -- 0x800084c0 -- robot_reg[0x130]
+          iMST_RDATA <= iSTP_POL_0_PERIOD & iSTP_POL_0_CTRL;
+        when "0100110001" => -- 0x800084c4 -- robot_reg[0x131]
+          iMST_RDATA <= iSTP_POL_0_ACT_POS & iSTP_POL_0_NEW_POS;
+        when "0100110010" => -- 0x800084c8 -- robot_reg[0x132]
+          iMST_RDATA <= iSTP_POL_1_PERIOD & iSTP_POL_1_CTRL;
+        when "0100110011" => -- 0x800084cc -- robot_reg[0x133]
+          iMST_RDATA <= iSTP_POL_1_ACT_POS & iSTP_POL_1_NEW_POS;
+
 
         when others =>
       end case;

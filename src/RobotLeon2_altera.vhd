@@ -39,11 +39,13 @@ entity RobotLeon2_altera is
     ; PWM_SERVO10         : out std_logic
     ; PWM_SERVO11         : out std_logic
 
-    -- PWM POMPE
+    -- PWM POMPE & MOTERUS
     ; PWM_POMPE0          : out std_logic
     ; DIR_POMPE0          : out std_logic
     ; PWM_POMPE1          : out std_logic
     ; DIR_POMPE1          : out std_logic
+    ; PWM_MOTOR2          : out std_logic
+    ; DIR_MOTOR2          : out std_logic
 
     -- STEPPER
     ; STP4_PWM            : out std_logic
@@ -61,8 +63,7 @@ entity RobotLeon2_altera is
     ; GPIO_005            : in std_logic
     ; GPIO_006            : in std_logic
     ; GPIO_007            : in std_logic
-    ; GPIO_008            : in std_logic
-    ; GPIO_009            : in std_logic
+
     ; GPIO_014            : in std_logic
     ; GPIO_015            : in std_logic
 
@@ -220,7 +221,11 @@ component core
     pwm_servo10         : out std_logic;
     pwm_servo11         : out std_logic;
     pwm_pump0           : out std_logic;
+    dir_pump0           : out std_logic;
     pwm_pump1           : out std_logic;
+    dir_pump1           : out std_logic;
+    pwm_motor2          : out std_logic;
+    dir_motor2          : out std_logic;
     stp_0_step          : out std_logic;
     stp_0_dir           : out std_logic;
     stp_1_step          : out std_logic;
@@ -380,7 +385,11 @@ begin
 
       -- POMPES
       , pwm_pump0    => PWM_POMPE0
+      , dir_pump0    => DIR_POMPE0
       , pwm_pump1    => PWM_POMPE1
+      , dir_pump1    => DIR_POMPE1
+      , pwm_motor2   => PWM_MOTOR2
+      , dir_motor2   => DIR_MOTOR2
 
       -- STEPPERS
       , stp_0_step   => STP4_PWM
@@ -394,10 +403,6 @@ begin
       -- debug/test
       , debug_test  => debug_test
       );
-
--- FIXME : TODO
-  DIR_POMPE0 <= '0';
-  DIR_POMPE1 <= '0';
 
 -- FIXME : TODO ++
 -- disble this when I2C master enabled
@@ -461,8 +466,6 @@ begin
                     GPIO_005   when (debug_test = X"80000007") else
                     GPIO_006   when (debug_test = X"80000008") else
                     GPIO_007   when (debug_test = X"80000009") else
-                    GPIO_008   when (debug_test = X"8000000a") else
-                    GPIO_009   when (debug_test = X"8000000b") else
                     GPIO_014   when (debug_test = X"80000010") else -- FAIL !
                     GPIO_015   when (debug_test = X"80000011") else
                     GPIO_018   when (debug_test = X"80000012") else
