@@ -50,10 +50,14 @@ entity RobotLeon2_altera is
     -- STEPPER
     ; STP4_PWM            : out std_logic
     ; STP4_DIR            : out std_logic
-    ; STP5_PWM            : out std_logic
-    ; STP5_DIR            : out std_logic
+--    ; STP5_PWM            : out std_logic -- FIXME : TODO
+--    ; STP5_DIR            : out std_logic -- FIXME : TODO
     ; STP_SWITCH0         : in std_logic
     ; STP_SWITCH1         : in std_logic
+
+    -- Encodeur tapis roulant
+    ; CONVEYOR_ENC_CH_A   : in std_logic
+    ; CONVEYOR_ENC_CH_B   : in std_logic
 
     -- GPIOs
     ; GPIO_0_IN0          : in std_logic
@@ -396,8 +400,8 @@ begin
       -- STEPPERS
       , stp_0_step   => STP4_PWM
       , stp_0_dir    => STP4_DIR
-      , stp_1_step   => STP5_PWM
-      , stp_1_dir    => STP5_DIR
+      , stp_1_step   => open -- FIXME : TODO
+      , stp_1_dir    => open -- FIXME : TODO
       , stp_switch0  => STP_SWITCH0
       , stp_switch1  => STP_SWITCH1
 

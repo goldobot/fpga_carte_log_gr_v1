@@ -133,18 +133,30 @@ set_location_assignment PIN_A6  -to PWM_POMPE0
 set_location_assignment PIN_D6  -to DIR_POMPE0
 set_location_assignment PIN_B6  -to PWM_POMPE1
 set_location_assignment PIN_B7  -to DIR_POMPE1
-set_location_assignment PIN_A5  -to PWM_MOTOR2
-set_location_assignment PIN_D5  -to DIR_MOTOR2
+##set_location_assignment PIN_A5  -to PWM_MOTOR2
+set_location_assignment PIN_A2  -to PWM_MOTOR2
+##set_location_assignment PIN_D5  -to DIR_MOTOR2
+set_location_assignment PIN_B3  -to DIR_MOTOR2
+
+# ----------------------------
+# Encodeur tapis
+# ----------------------------
+set_location_assignment PIN_D3  -to CONVEYOR_ENC_CH_A
+set_location_assignment PIN_C3  -to CONVEYOR_ENC_CH_B
 
 # -------
 # STEPPER
 # -------
-set_location_assignment PIN_A2  -to STP4_PWM
-set_location_assignment PIN_B3  -to STP4_DIR
-set_location_assignment PIN_D3  -to STP5_PWM
-set_location_assignment PIN_C3  -to STP5_DIR
-set_location_assignment PIN_A4  -to STP_SWITCH0
-set_location_assignment PIN_B5  -to STP_SWITCH1
+##set_location_assignment PIN_A2  -to STP4_PWM
+set_location_assignment PIN_A4  -to STP4_PWM
+##set_location_assignment PIN_B3  -to STP4_DIR
+set_location_assignment PIN_B5  -to STP4_DIR
+##set_location_assignment PIN_D3  -to STP5_PWM
+##set_location_assignment PIN_C3  -to STP5_DIR
+##set_location_assignment PIN_A4  -to STP_SWITCH0
+set_location_assignment PIN_A5  -to STP_SWITCH0
+##set_location_assignment PIN_B5  -to STP_SWITCH1
+set_location_assignment PIN_D5  -to STP_SWITCH1
 
 # ----
 # GPIO
