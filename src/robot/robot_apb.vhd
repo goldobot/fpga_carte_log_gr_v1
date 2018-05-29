@@ -53,6 +53,8 @@ entity robot_apb is
     ; stp_0_dir           : out std_logic
     ; stp_1_step          : out std_logic
     ; stp_1_dir           : out std_logic
+    ; stp_switch0         : in std_logic
+    ; stp_switch1         : in std_logic
     -- I2C slave signals
     ; sda_in_slv          : in  std_logic
     ; sda_out_slv         : out std_logic
@@ -159,8 +161,9 @@ component STEPPER_POLOLU
     CLK            : in std_logic;
     CTRL           : in std_logic_vector (15 downto 0);
     PERIOD         : in std_logic_vector (15 downto 0);
-    NEW_POS        : in std_logic_vector (15 downto 0);
-    ACTUAL_POS     : out std_logic_vector (15 downto 0);
+    TARGET_POS     : in std_logic_vector (15 downto 0);
+    SET_CUR_POS    : in std_logic_vector (15 downto 0);
+    CUR_POS        : out std_logic_vector (15 downto 0);
     HIGH_SW        : in std_logic;
     LOW_SW         : in std_logic;
     N_ENABLE       : out std_logic;
@@ -225,19 +228,26 @@ end component;
 
   signal iSTP_POL_0_CTRL      : std_logic_vector (15 downto 0);
   signal iSTP_POL_0_PERIOD    : std_logic_vector (15 downto 0);
-  signal iSTP_POL_0_NEW_POS   : std_logic_vector (15 downto 0);
-  signal iSTP_POL_0_ACT_POS   : std_logic_vector (15 downto 0);
+  signal iSTP_POL_0_TARGET_POS  : std_logic_vector (15 downto 0);
+  signal iSTP_POL_0_CUR_POS   : std_logic_vector (15 downto 0);
+  signal iSTP_POL_0_SET_CUR_POS : std_logic_vector (15 downto 0);
 --  signal iSTP_POL_0_NEN       : std_logic; -- FIXME : TODO
   signal iSTP_POL_0_STEP      : std_logic;
   signal iSTP_POL_0_DIR       : std_logic;
 
   signal iSTP_POL_1_CTRL      : std_logic_vector (15 downto 0);
   signal iSTP_POL_1_PERIOD    : std_logic_vector (15 downto 0);
-  signal iSTP_POL_1_NEW_POS   : std_logic_vector (15 downto 0);
-  signal iSTP_POL_1_ACT_POS   : std_logic_vector (15 downto 0);
+  signal iSTP_POL_1_TARGET_POS  : std_logic_vector (15 downto 0);
+  signal iSTP_POL_1_CUR_POS   : std_logic_vector (15 downto 0);
+  signal iSTP_POL_1_SET_CUR_POS : std_logic_vector (15 downto 0);
 --  signal iSTP_POL_1_NEN       : std_logic; -- FIXME : TODO
   signal iSTP_POL_1_STEP      : std_logic;
   signal iSTP_POL_1_DIR       : std_logic;
+
+  signal iROBOT2018_BAL0      : std_logic_vector (31 downto 0);
+  signal iROBOT2018_BAL1      : std_logic_vector (31 downto 0);
+  signal iROBOT2018_BAL2      : std_logic_vector (31 downto 0);
+  signal iROBOT2018_BAL3      : std_logic_vector (31 downto 0);
 
   signal iI2C_MASTER_RD       : std_logic;
   signal iI2C_MASTER_WR       : std_logic;
@@ -452,8 +462,9 @@ begin
       CLK => pclk,
       CTRL => iSTP_POL_0_CTRL,
       PERIOD => iSTP_POL_0_PERIOD,
-      NEW_POS => iSTP_POL_0_NEW_POS,
-      ACTUAL_POS => iSTP_POL_0_ACT_POS,
+      TARGET_POS => iSTP_POL_0_TARGET_POS,
+      CUR_POS => iSTP_POL_0_CUR_POS,
+      SET_CUR_POS => iSTP_POL_0_SET_CUR_POS,
       HIGH_SW => '0',
       LOW_SW => '0',
       N_ENABLE => open,
@@ -467,8 +478,9 @@ begin
       CLK => pclk,
       CTRL => iSTP_POL_1_CTRL,
       PERIOD => iSTP_POL_1_PERIOD,
-      NEW_POS => iSTP_POL_1_NEW_POS,
-      ACTUAL_POS => iSTP_POL_1_ACT_POS,
+      TARGET_POS => iSTP_POL_1_TARGET_POS,
+      CUR_POS => iSTP_POL_1_CUR_POS,
+      SET_CUR_POS => iSTP_POL_1_SET_CUR_POS,
       HIGH_SW => '0',
       LOW_SW => '0',
       N_ENABLE => open,
@@ -619,11 +631,18 @@ begin
 
       iSTP_POL_0_CTRL     <= X"0000";
       iSTP_POL_0_PERIOD   <= X"0010";
-      iSTP_POL_0_NEW_POS  <= X"0000";
+      iSTP_POL_0_TARGET_POS  <= X"FFFF";
+      iSTP_POL_0_SET_CUR_POS <= X"FFFF";
 
       iSTP_POL_1_CTRL     <= X"0000";
       iSTP_POL_1_PERIOD   <= X"0010";
-      iSTP_POL_1_NEW_POS  <= X"0000";
+      iSTP_POL_1_TARGET_POS  <= X"FFFF";
+      iSTP_POL_1_SET_CUR_POS <= X"FFFF";
+
+      iROBOT2018_BAL0     <= X"00000000";
+      iROBOT2018_BAL1     <= X"00000000";
+      iROBOT2018_BAL2     <= X"00000000";
+      iROBOT2018_BAL3     <= X"00000000";
 
 -- FIXME : DEBUG ++
       iSPI_DBG_SLV_DATA  <= (others => '0');
@@ -928,12 +947,40 @@ begin
             iSTP_POL_0_PERIOD   <= iMST_WDATA(31 downto 16);
             iSTP_POL_0_CTRL     <= iMST_WDATA(15 downto 0);
           when "0100110001" => -- 0x800084c4 -- robot_reg[0x131]
-            iSTP_POL_0_NEW_POS  <= iMST_WDATA(15 downto 0);
+            iSTP_POL_0_TARGET_POS  <= iMST_WDATA(15 downto 0);
+            iSTP_POL_0_SET_CUR_POS <= iMST_WDATA(31 downto 16);
           when "0100110010" => -- 0x800084c8 -- robot_reg[0x132]
             iSTP_POL_1_PERIOD   <= iMST_WDATA(31 downto 16);
             iSTP_POL_1_CTRL     <= iMST_WDATA(15 downto 0);
           when "0100110011" => -- 0x800084cc -- robot_reg[0x133]
-            iSTP_POL_1_NEW_POS  <= iMST_WDATA(15 downto 0);
+            iSTP_POL_1_TARGET_POS  <= iMST_WDATA(15 downto 0);
+            iSTP_POL_1_SET_CUR_POS <= iMST_WDATA(31 downto 16);
+          when "0100110100" => -- 0x800084d0 -- robot_reg[0x134]
+            null; -- <available>
+          when "0100110101" => -- 0x800084d4 -- robot_reg[0x135]
+            null; -- <available>
+          when "0100110110" => -- 0x800084d8 -- robot_reg[0x136]
+            null; -- <available>
+          when "0100110111" => -- 0x800084dc -- robot_reg[0x137]
+            null; -- <available>
+
+          -- BAL & capteurs PETIT ROBOT 2018
+          when "0100111000" => -- 0x800084e0 -- robot_reg[0x138]
+            null; -- RO : stp_switch1 & stp_switch0;
+          when "0100111001" => -- 0x800084e4 -- robot_reg[0x139]
+            null; -- <available>
+          when "0100111010" => -- 0x800084e8 -- robot_reg[0x13a]
+            null; -- <available>
+          when "0100111011" => -- 0x800084ec -- robot_reg[0x13b]
+            null; -- <available>
+          when "0100111100" => -- 0x800084f0 -- robot_reg[0x13c]
+            iROBOT2018_BAL0 <= iMST_WDATA;
+          when "0100111101" => -- 0x800084f4 -- robot_reg[0x13d]
+            iROBOT2018_BAL1 <= iMST_WDATA;
+          when "0100111110" => -- 0x800084f8 -- robot_reg[0x13e]
+            iROBOT2018_BAL2 <= iMST_WDATA;
+          when "0100111111" => -- 0x800084fc -- robot_reg[0x13f]
+            iROBOT2018_BAL3 <= iMST_WDATA;
 
           when others =>
         end case;
@@ -1274,12 +1321,37 @@ begin
         when "0100110000" => -- 0x800084c0 -- robot_reg[0x130]
           iMST_RDATA <= iSTP_POL_0_PERIOD & iSTP_POL_0_CTRL;
         when "0100110001" => -- 0x800084c4 -- robot_reg[0x131]
-          iMST_RDATA <= iSTP_POL_0_ACT_POS & iSTP_POL_0_NEW_POS;
+          iMST_RDATA <= iSTP_POL_0_CUR_POS & iSTP_POL_0_TARGET_POS;
         when "0100110010" => -- 0x800084c8 -- robot_reg[0x132]
           iMST_RDATA <= iSTP_POL_1_PERIOD & iSTP_POL_1_CTRL;
         when "0100110011" => -- 0x800084cc -- robot_reg[0x133]
-          iMST_RDATA <= iSTP_POL_1_ACT_POS & iSTP_POL_1_NEW_POS;
+          iMST_RDATA <= iSTP_POL_1_CUR_POS & iSTP_POL_1_TARGET_POS;
+        when "0100110100" => -- 0x800084d0 -- robot_reg[0x134]
+          iMST_RDATA <= (others => '0');
+        when "0100110101" => -- 0x800084d4 -- robot_reg[0x135]
+          iMST_RDATA <= (others => '0');
+        when "0100110110" => -- 0x800084d8 -- robot_reg[0x136]
+          iMST_RDATA <= (others => '0');
+        when "0100110111" => -- 0x800084dc -- robot_reg[0x137]
+          iMST_RDATA <= (others => '0');
 
+          -- BAL & capteurs PETIT ROBOT 2018
+        when "0100111000" => -- 0x800084e0 -- robot_reg[0x138]
+          iMST_RDATA <= X"0000000" & "00" & stp_switch1 & stp_switch0;
+        when "0100111001" => -- 0x800084e4 -- robot_reg[0x139]
+          iMST_RDATA <= (others => '0');
+        when "0100111010" => -- 0x800084e8 -- robot_reg[0x13a]
+          iMST_RDATA <= (others => '0');
+        when "0100111011" => -- 0x800084ec -- robot_reg[0x13b]
+          iMST_RDATA <= (others => '0');
+        when "0100111100" => -- 0x800084f0 -- robot_reg[0x13c]
+          iMST_RDATA <= iROBOT2018_BAL0;
+        when "0100111101" => -- 0x800084f4 -- robot_reg[0x13d]
+          iMST_RDATA <= iROBOT2018_BAL1;
+        when "0100111110" => -- 0x800084f8 -- robot_reg[0x13e]
+          iMST_RDATA <= iROBOT2018_BAL2;
+        when "0100111111" => -- 0x800084fc -- robot_reg[0x13f]
+          iMST_RDATA <= iROBOT2018_BAL3;
 
         when others =>
       end case;

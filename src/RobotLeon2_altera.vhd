@@ -52,6 +52,8 @@ entity RobotLeon2_altera is
     ; STP4_DIR            : out std_logic
     ; STP5_PWM            : out std_logic
     ; STP5_DIR            : out std_logic
+    ; STP_SWITCH0         : in std_logic
+    ; STP_SWITCH1         : in std_logic
 
     -- GPIOs
     ; GPIO_0_IN0          : in std_logic
@@ -61,8 +63,6 @@ entity RobotLeon2_altera is
     ; GPIO_003            : in std_logic
 
     ; GPIO_005            : in std_logic
-    ; GPIO_006            : in std_logic
-    ; GPIO_007            : in std_logic
 
     ; GPIO_014            : in std_logic
     ; GPIO_015            : in std_logic
@@ -230,6 +230,8 @@ component core
     stp_0_dir           : out std_logic;
     stp_1_step          : out std_logic;
     stp_1_dir           : out std_logic;
+    stp_switch0         : in std_logic;
+    stp_switch1         : in std_logic;
 
     -- LEDS
     leds                : out std_logic_vector(7 downto 0);
@@ -396,6 +398,8 @@ begin
       , stp_0_dir    => STP4_DIR
       , stp_1_step   => STP5_PWM
       , stp_1_dir    => STP5_DIR
+      , stp_switch0  => STP_SWITCH0
+      , stp_switch1  => STP_SWITCH1
 
       -- LEDS
       , leds        => core_leds
@@ -464,8 +468,6 @@ begin
                     GPIO_0_IN1 when (debug_test = X"80000002") else
                     GPIO_003   when (debug_test = X"80000005") else
                     GPIO_005   when (debug_test = X"80000007") else
-                    GPIO_006   when (debug_test = X"80000008") else
-                    GPIO_007   when (debug_test = X"80000009") else
                     GPIO_014   when (debug_test = X"80000010") else -- FAIL !
                     GPIO_015   when (debug_test = X"80000011") else
                     GPIO_018   when (debug_test = X"80000012") else

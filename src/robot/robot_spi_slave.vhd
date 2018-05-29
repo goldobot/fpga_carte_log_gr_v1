@@ -60,6 +60,41 @@ architecture robot_spi_slave_arch of robot_spi_slave is
   signal iSPI_MASTER_RD    : std_logic;
   signal iSPI_MASTER_WR    : std_logic;
 
+  function RMAP_CalculateCRC (
+    constant INCRC: in Std_Logic_Vector(7 downto 0);
+    constant INBYTE: in Std_Logic_Vector(7 downto 0))
+    return
+    Std_Logic_Vector is
+-- Same range as the two inputs
+-- This variable is to hold the output CRC value.
+    variable OUTCRC:
+      Std_Logic_Vector(7 downto 0);
+-- Internal Linear Feedback Shift Register (LFSR). Note that the
+-- vector indices correspond to the powers of the Galois field
+-- polynomial g(x) which are NOT the same as the indices of the
+-- SpaceWire data byte.
+    variable LFSR:
+      Std_Logic_Vector(7 downto 0);
+  begin
+-- External to internal bit-order reversal to match indices.
+    for i in 0 to 7 loop
+      LFSR(7-i) := INCRC(i);
+    end loop;
+-- Left shift LFSR eight times feeding in INBYTE bit 0 first (LSB).
+    for j in 0 to 7 loop
+      LFSR(7 downto 0) := (LFSR(6 downto 2)) &
+                          (INBYTE(j) xor LFSR(7) xor LFSR(1)) &
+                          (INBYTE(j) xor LFSR(7) xor LFSR(0)) &
+                          (INBYTE(j) xor LFSR(7));
+    end loop;
+-- Internal to external bit-order reversal to match indices.
+    for i in 0 to 7 loop
+      OUTCRC(7-i) := LFSR(i);
+    end loop;
+-- Return the updated RMAP CRC byte value.
+    return OUTCRC;
+  end function RMAP_CalculateCRC;
+
 begin
 
   latch_proc : process (CLK, RESET)
