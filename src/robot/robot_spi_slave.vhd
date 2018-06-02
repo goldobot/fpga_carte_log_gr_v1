@@ -57,6 +57,9 @@ architecture robot_spi_slave_arch of robot_spi_slave is
 
   signal iREG_SELECT       : std_logic_vector(3 downto 0);
 
+  signal iRECV_CRC_LFSR    : std_logic_vector(7 downto 0);
+  signal iSEND_CRC_LFSR    : std_logic_vector(7 downto 0);
+
   signal iSPI_MASTER_RD    : std_logic;
   signal iSPI_MASTER_WR    : std_logic;
 
@@ -95,6 +98,30 @@ architecture robot_spi_slave_arch of robot_spi_slave is
     return OUTCRC;
   end function RMAP_CalculateCRC;
 
+  function MyLittleCRC (
+-- FIXME : DEBUG : I0 & I1 & I2 & I3 & I4 & I5 & I6 & I7 = I1 & I2 & I3 & I4 & I5 & (B xor I0 xor I6) & (B xor I0 xor I7) & (B xor I0) ??
+    constant INCRC: in Std_Logic_Vector(7 downto 0);
+    constant INBIT: in Std_Logic)
+    return
+    Std_Logic_Vector is
+    variable OUTCRC:
+      Std_Logic_Vector(7 downto 0);
+    variable LFSR:
+      Std_Logic_Vector(7 downto 0);
+  begin
+    for i in 0 to 7 loop
+      LFSR(7-i) := INCRC(i);
+    end loop;
+    LFSR(7 downto 0) := (LFSR(6 downto 2)) &
+                        (INBIT xor LFSR(7) xor LFSR(1)) &
+                        (INBIT xor LFSR(7) xor LFSR(0)) &
+                        (INBIT xor LFSR(7));
+    for i in 0 to 7 loop
+      OUTCRC(7-i) := LFSR(i);
+    end loop;
+    return OUTCRC;
+  end function MyLittleCRC;
+
 begin
 
   latch_proc : process (CLK, RESET)
@@ -117,6 +144,7 @@ begin
   slave_spi_proc : process (CLK, RESET)
     variable iRECV_SR_NEXT : std_logic_vector(47 downto 0) := zero48;
     variable iSLV_DATA_NEXT : std_logic_vector(31 downto 0) := zero32;
+    variable iSEND_CRC_LFSR_NEXT : std_logic_vector(7 downto 0) := zero8;
   begin
     if RESET = '1' then
       iRECV_SR         <= zero48;
@@ -124,11 +152,13 @@ begin
       iPERIOD_DETECT   <= zero32;
       iBITCNT          <= zero8;
       iREG_SELECT      <= "0000";
-      iSPI_MASTER_RD    <= '0';
-      iSPI_MASTER_WR    <= '0';
+      iSPI_MASTER_RD   <= '0';
+      iSPI_MASTER_WR   <= '0';
       iSPI_MASTER_ADDR <= zero32;
       iSPI_MASTER_DATA <= zero32;
       iSPI_SLAVE_DATA  <= zero32;
+      iRECV_CRC_LFSR   <= zero8;
+      iSEND_CRC_LFSR   <= zero8;
     elsif rising_edge(CLK) then
       if (iSPI_CLK_OLD = '0') and (iSPI_CLK = '1') then
         iPERIOD_DETECT <= zero32;
@@ -141,10 +171,14 @@ begin
         iRECV_SR    <= zero48;
         iBITCNT     <= zero8;
         iREG_SELECT <= "0000";
+        iRECV_CRC_LFSR <= zero8;
       else
         if (iSPI_CLK_OLD = '0') and (iSPI_CLK = '1') then
           if (iBITCNT = X"00") then
             iSEND_SR         <= (others => '1');
+            iSEND_CRC_LFSR <= X"E0";
+          elsif (iBITCNT = X"01") then
+            iSEND_CRC_LFSR <= X"90";
           elsif (iBITCNT = X"07") then
             case iREG_SELECT is
               when X"0" =>
@@ -162,14 +196,22 @@ begin
               when others =>
                 iSLV_DATA_NEXT := X"55AA55AA";
             end case;
-            iSEND_SR <= iSLV_DATA_NEXT &
-                        (iSLV_DATA_NEXT(31 downto 24) xor
-                         iSLV_DATA_NEXT(23 downto 16) xor
-                         iSLV_DATA_NEXT(15 downto 8)  xor
-                         iSLV_DATA_NEXT(7 downto 0)) &
-                        "11111111";
+-- FIXME : TODO : clean (was old checksum)
+--            iSEND_SR <= iSLV_DATA_NEXT &
+--                        (iSLV_DATA_NEXT(31 downto 24) xor
+--                         iSLV_DATA_NEXT(23 downto 16) xor
+--                         iSLV_DATA_NEXT(15 downto 8)  xor
+--                         iSLV_DATA_NEXT(7 downto 0)) &
+--                        "11111111";
+            iSEND_SR <= iSLV_DATA_NEXT & X"FFFF";
+            iSEND_CRC_LFSR <= MyLittleCRC(iSEND_CRC_LFSR,iSEND_SR(47));
+          elsif (iBITCNT = X"27") then
+            iSEND_CRC_LFSR_NEXT := MyLittleCRC(iSEND_CRC_LFSR,iSEND_SR(47));
+            iSEND_SR <= iSEND_CRC_LFSR_NEXT & X"FFFFFFFFFF";
+            iSEND_CRC_LFSR <= iSEND_CRC_LFSR_NEXT;
           else
             iSEND_SR <= iSEND_SR(46 downto 0) & '1';
+            iSEND_CRC_LFSR <= MyLittleCRC(iSEND_CRC_LFSR,iSEND_SR(47));
           end if;
         end if;
 -- FIXME : TODO : implementer un registre de mode avec flags CPOL et CPHA
@@ -177,6 +219,7 @@ begin
         if (iSPI_CLK_OLD = '0') and (iSPI_CLK = '1') then
           iRECV_SR_NEXT := iRECV_SR(46 downto 0) & iSPI_MOSI_OLD2;
           iRECV_SR <= iRECV_SR_NEXT;
+          iRECV_CRC_LFSR <= MyLittleCRC(iRECV_CRC_LFSR,iSPI_MOSI_OLD2);
           iBITCNT <= iBITCNT + 1;
           if (iBITCNT = X"03") then
             iREG_SELECT <= iRECV_SR_NEXT(3 downto 0);

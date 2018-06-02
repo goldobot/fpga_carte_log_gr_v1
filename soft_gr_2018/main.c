@@ -230,8 +230,10 @@ int main () {
     unsigned int robot2018_rack_state = 0;
     unsigned int robot2018_rack_cmd = 0;
     unsigned int robot2018_stp_switch0 = 0;
-    unsigned int robot2018_rack_limit_l = 0;
-    unsigned int robot2018_rack_limit_r = 0x7fff;
+    unsigned int robot2018_rack_limit_l = 0x7fff;
+    unsigned int robot2018_rack_limit_r = 0;
+    unsigned int robot2018_stp_cur_pos = 0x4000;
+    unsigned int robot2018_stp_target_pos = 0x4000;
 
 
     i2c_test_data = 0;
@@ -280,7 +282,7 @@ int main () {
 #endif
 
     uart_putchar ( 0xa );
-    uart_putstring ( "Robot GOLDO - TEST INTEGRATION carte_log_gr_v1 (18042018)" );
+    uart_putstring ( "Robot GOLDO - soft GR actionneurs 2018" );
     uart_putchar ( 0xa );
     uart_putstring ( "Fonctions OK :" );
     uart_putchar ( 0xa );
@@ -432,50 +434,110 @@ int main () {
       robot2018_rack_cmd = robot_reg[0x13c];
       robot2018_stp_switch0 = robot_reg[0x138] & 0x00000001;
 
-      if ( robot2018_rack_cmd != 0 ) {
+      if ( (robot2018_rack_cmd != 0) || (robot2018_rack_cmd != 0x42424242) ) {
         switch (robot2018_rack_cmd) {
         case 1:
           /* droite */
           robot_reg[0x131] = robot2018_rack_limit_r;
           robot2018_rack_state = 1;
+          robot_reg[0x13c] = 0x42424242;
           break;
         case 2:
           /* centre */
           robot_reg[0x131] = (robot2018_rack_limit_r+robot2018_rack_limit_l)/2;
           robot2018_rack_state = 2;
+          robot_reg[0x13c] = 0x42424242;
           break;
         case 3:
           /* gauche */
           robot_reg[0x131] = robot2018_rack_limit_l;
           robot2018_rack_state = 3;
+          robot_reg[0x13c] = 0x42424242;
           break;
         case 11:
-          /* recallage gauche */
+          /* recallage droite */
           robot_reg[0x131] = 0;
           robot2018_rack_state = 11;
+          robot_reg[0x13c] = 0x42424242;
           break;
         case 13:
-          /* recallage droite */
+          /* recallage gauche */
           robot_reg[0x131] = 0x7fff;
           robot2018_rack_state = 13;
+          robot_reg[0x13c] = 0x42424242;
+          break;
+        case 0xdeadbeef:
+          /* arret d'urgence */
+          /* goldo_fpga_cmd_servo(0, 0); */
+          robot_reg[0x101] = 0;
+          /* goldo_fpga_cmd_servo(1, 0); */
+          robot_reg[0x103] = 0;
+          /* goldo_fpga_cmd_servo(2, 0); */
+          robot_reg[0x105] = 0;
+          /* goldo_fpga_cmd_servo(3, 0); */
+          robot_reg[0x107] = 0;
+          /* goldo_fpga_cmd_servo(4, 0); */
+          robot_reg[0x109] = 0;
+          /* goldo_fpga_cmd_servo(5, 0); */
+          robot_reg[0x10b] = 0;
+          /* goldo_fpga_cmd_servo(6, 0); */
+          robot_reg[0x10d] = 0;
+          /* goldo_fpga_cmd_servo(7, 0); */
+          robot_reg[0x10f] = 0;
+          /* goldo_fpga_cmd_servo(8, 0); */
+          robot_reg[0x111] = 0;
+          /* goldo_fpga_cmd_servo(9, 0); */
+          robot_reg[0x113] = 0;
+          /* goldo_fpga_cmd_servo(10, 0); */
+          robot_reg[0x115] = 0;
+          /* goldo_fpga_cmd_servo(11, 0); */
+          robot_reg[0x117] = 0;
+          /* goldo_fpga_cmd_motor(0, 0); */
+          robot_reg[0x121] = 0;
+          /* goldo_fpga_cmd_motor(1, 0); */
+          robot_reg[0x123] = 0;
+          /* goldo_fpga_cmd_motor(2, 0); */
+          robot_reg[0x125] = 0;
+          /* goldo_fpga_cmd_stepper(0, 0xffffffff); */
+          robot_reg[0x131] = 0xffffffff;
+          robot_reg[0x13c] = 0;
           break;
         }
-        robot_reg[0x13c] = 0;
       }
 
-      if ( robot2018_stp_switch0 != 0 ) {
-        switch (robot2018_rack_state) {
-        case 11:
-          /* droite */
-          robot2018_rack_limit_r = robot_reg[0x131]>>16;
-          robot_reg[0x131] = 0xffffffff;
-          break;
-        case 13:
-          /* gauche */
-          robot2018_rack_limit_l = robot_reg[0x131]>>16;
-          robot_reg[0x131] = 0xffffffff;
-          break;
+      robot2018_stp_cur_pos = robot_reg[0x131]>>16;
+      robot2018_stp_target_pos = robot_reg[0x131] & 0xffff;
+
+      switch (robot2018_rack_state) {
+      case 1:
+        /* depl. droite */
+      case 2:
+        /* depl. centre */
+      case 3:
+        /* depl. gauche */
+        if (robot2018_stp_cur_pos == robot2018_stp_target_pos) {
+          robot2018_rack_state = 0;
+          robot_reg[0x13c] = 0;
         }
+        break;
+      case 11:
+        /* recal. droite */
+        if ( robot2018_stp_switch0 != 0 ) {
+          robot2018_rack_limit_r = robot2018_stp_cur_pos;
+          robot_reg[0x131] = 0xffffffff;
+          robot2018_rack_state = 0;
+          robot_reg[0x13c] = 0;
+        }
+        break;
+      case 13:
+        /* recal. gauche */
+        if ( robot2018_stp_switch0 != 0 ) {
+          robot2018_rack_limit_l = robot2018_stp_cur_pos;
+          robot_reg[0x131] = 0xffffffff;
+          robot2018_rack_state = 0;
+          robot_reg[0x13c] = 0;
+        }
+        break;
       }
 
       robot_timer_val = robot_reg[R_ROBOT_TIMER];
