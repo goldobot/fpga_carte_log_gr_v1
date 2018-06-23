@@ -162,6 +162,7 @@ begin
     variable iSLV_DATA_NEXT : std_logic_vector(31 downto 0) := zero32;
     variable iSEND_CRC_LFSR_NEXT : std_logic_vector(7 downto 0) := zero8;
     variable iRECV_CRC_LFSR_NEXT : std_logic_vector(7 downto 0) := zero8;
+    variable iDBG_CRC_DATA : std_logic_vector(31 downto 0) := zero32;
   begin
     if RESET = '1' then
       iRECV_SR         <= zero48;
@@ -176,7 +177,10 @@ begin
       iSPI_SLAVE_DATA  <= zero32;
       iRECV_CRC_LFSR   <= zero8;
       iSEND_CRC_LFSR   <= zero8;
+      DBG_CRC_DATA     <= zero32;
+      DBG_CRC_WR       <= '0';
     elsif rising_edge(CLK) then
+      iDBG_CRC_DATA := zero32;
       if (iSPI_CLK_OLD = '0') and (iSPI_CLK = '1') then
         iPERIOD_DETECT <= zero32;
       else
@@ -225,12 +229,24 @@ begin
             end case;
             iBITCNT <= zero8;
             iRECV_CRC_LFSR <= zero8;
+            iDBG_CRC_DATA := X"aaaa0000";
           else
             iRECV_CRC_LFSR_NEXT := MyLittleCRC(iRECV_CRC_LFSR,iSPI_MOSI_OLD2);
+            if (iBITCNT = X"00") then
+              iDBG_CRC_DATA := X"ffff" &
+                               iSPI_MOSI_OLD2 & "0000000" &
+                               iRECV_CRC_LFSR_NEXT;
+            else
+              iDBG_CRC_DATA := X"0000" &
+                               iSPI_MOSI_OLD2 & "0000000" &
+                               iRECV_CRC_LFSR_NEXT;
+            end if;
             iRECV_CRC_LFSR <= iRECV_CRC_LFSR_NEXT;
           end if;
+          DBG_CRC_DATA <= iDBG_CRC_DATA;
+          DBG_CRC_WR <= '1';
         else
-          null;
+          DBG_CRC_WR <= '0';
         end if; -- (iSPI_CLK_OLD = '0') and (iSPI_CLK = '1')
 
 -- FIXME : TODO : implementer un registre de mode avec flags CPOL et CPHA
@@ -239,9 +255,15 @@ begin
           if (iBITCNT = X"00") then
             iSEND_SR         <= (others => '1');
             iSEND_CRC_LFSR_NEXT := X"E0";
+--            iDBG_CRC_DATA := X"ffff" &
+--                             '1' & "0000000" &
+--                             iSEND_CRC_LFSR_NEXT;
           elsif (iBITCNT = X"01") then
             iSEND_SR         <= (others => '1');
             iSEND_CRC_LFSR_NEXT := X"90";
+--            iDBG_CRC_DATA := X"0000" &
+--                             '1' & "0000000" &
+--                             iSEND_CRC_LFSR_NEXT;
           elsif (iBITCNT = X"07") then
             case iREG_SELECT is
               when X"0" =>
@@ -260,9 +282,15 @@ begin
                 iSLV_DATA_NEXT := X"55AA55AA";
             end case;
             iSEND_CRC_LFSR_NEXT := MyLittleCRC(iSEND_CRC_LFSR,iSEND_SR(47));
+--            iDBG_CRC_DATA := X"0000" &
+--                             iSEND_SR(47) & "0000000" &
+--                             iSEND_CRC_LFSR_NEXT;
             iSEND_SR <= iSLV_DATA_NEXT & X"FFFF";
           elsif (iBITCNT = X"27") then
             iSEND_CRC_LFSR_NEXT := MyLittleCRC(iSEND_CRC_LFSR,iSEND_SR(47));
+--            iDBG_CRC_DATA := X"5555" &
+--                             iSEND_SR(47) & "0000000" &
+--                             iSEND_CRC_LFSR_NEXT;
             if ((iREG_SELECT = X"0") or
                 (iREG_SELECT = X"1") or
                 (iREG_SELECT = X"5")) then
@@ -272,9 +300,16 @@ begin
             end if;
           else
             iSEND_CRC_LFSR_NEXT := MyLittleCRC(iSEND_CRC_LFSR,iSEND_SR(47));
+--            iDBG_CRC_DATA := X"0000" &
+--                             iSEND_SR(47) & "0000000" &
+--                             iSEND_CRC_LFSR_NEXT;
             iSEND_SR <= iSEND_SR(46 downto 0) & '1';
           end if;
           iSEND_CRC_LFSR <= iSEND_CRC_LFSR_NEXT;
+--          DBG_CRC_DATA <= iDBG_CRC_DATA;
+--          DBG_CRC_WR <= '1';
+--        else
+--          DBG_CRC_WR <= '0';
         end if; -- (iSPI_CLK_OLD = '1') and (iSPI_CLK = '0')
 
       end if;

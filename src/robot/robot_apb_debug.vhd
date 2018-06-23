@@ -174,6 +174,20 @@ component STEPPER_POLOLU
   );
 end component;
 
+component fifo256x32 is
+  port (
+    aclr    : in std_logic;
+    clock   : in std_logic;
+    data    : in std_logic_vector (31 downto 0);
+    rdreq   : in std_logic;
+    sclr    : in std_logic;
+    wrreq   : in std_logic;
+    empty   : out std_logic;
+    full    : out std_logic;
+    q       : out std_logic_vector (31 downto 0)
+  );
+end component;
+
 
   signal iRESET               : std_logic;
 
@@ -270,6 +284,38 @@ end component;
   signal iSPI_SLAVE_DATA      : std_logic_vector (31 downto 0);
   signal iSPI_DBG_MST_DATA    : std_logic_vector (31 downto 0);
   signal iSPI_DBG_SLV_DATA    : std_logic_vector (31 downto 0);
+  signal iSPI_DBG_CRC_DATA    : std_logic_vector (31 downto 0);
+  signal iSPI_DBG_CRC_WR      : std_logic;
+  signal iSPI_DBG_CRC_RD      : std_logic;
+  signal iSPI_DBG_CRC_RD_OLD  : std_logic;
+  signal iSPI_DBG_CRC_RD_SYNC : std_logic;
+  signal iSPI_DBG_CRC_EMPTY   : std_logic;
+  signal iSPI_DBG_CRC_FULL    : std_logic;
+  signal iSPI_DBG_CRC_RDATA   : std_logic_vector (31 downto 0);
+
+  function MyLittleCRC (
+-- FIXME : DEBUG : I0 & I1 & I2 & I3 & I4 & I5 & I6 & I7 = I1 & I2 & I3 & I4 & I5 & (B xor I0 xor I6) & (B xor I0 xor I7) & (B xor I0) ??
+    constant INCRC: in Std_Logic_Vector(7 downto 0);
+    constant INBIT: in Std_Logic)
+    return
+    Std_Logic_Vector is
+    variable OUTCRC:
+      Std_Logic_Vector(7 downto 0);
+    variable LFSR:
+      Std_Logic_Vector(7 downto 0);
+  begin
+    for i in 0 to 7 loop
+      LFSR(7-i) := INCRC(i);
+    end loop;
+    LFSR(7 downto 0) := (LFSR(6 downto 2)) &
+                        (INBIT xor LFSR(7) xor LFSR(1)) &
+                        (INBIT xor LFSR(7) xor LFSR(0)) &
+                        (INBIT xor LFSR(7));
+    for i in 0 to 7 loop
+      OUTCRC(7-i) := LFSR(i);
+    end loop;
+    return OUTCRC;
+  end function MyLittleCRC;
 
 begin
 
@@ -503,12 +549,25 @@ begin
       SPI_SLAVE_IRQ => open,
       DBG_MST_DATA => iSPI_DBG_MST_DATA,
       DBG_SLV_DATA => iSPI_DBG_SLV_DATA,
-      DBG_CRC_DATA => open,
-      DBG_CRC_WR => open,
+      DBG_CRC_DATA => iSPI_DBG_CRC_DATA,
+      DBG_CRC_WR => iSPI_DBG_CRC_WR,
       SPI_CS => spi_cs,
       SPI_CLK => spi_clk,
       SPI_MOSI => spi_mosi,
       SPI_MISO => spi_miso
+      );
+
+  c_dbg_crc_fifo256x32 : fifo256x32
+    port map (
+      aclr   => iRESET,
+      clock  => pclk,
+      data   => iSPI_DBG_CRC_DATA,
+      rdreq  => iSPI_DBG_CRC_RD_SYNC,
+      sclr   => '0',
+      wrreq  => iSPI_DBG_CRC_WR,
+      empty  => iSPI_DBG_CRC_EMPTY,
+      full   => iSPI_DBG_CRC_FULL,
+      q      => iSPI_DBG_CRC_RDATA
       );
 
   c_robot_i2c_slave : robot_i2c_slave
@@ -651,7 +710,6 @@ begin
 -- FIXME : DEBUG ++
       iSPI_DBG_SLV_DATA  <= (others => '0');
 -- FIXME : DEBUG --
-
     elsif rising_edge(pclk) then
       if (iMST_WRITE = '1') then
         case iMST_ADDR(11 downto 2) is
@@ -985,6 +1043,9 @@ begin
             iROBOT2018_BAL2 <= iMST_WDATA;
           when "0100111111" => -- 0x800084fc -- robot_reg[0x13f]
             iROBOT2018_BAL3 <= iMST_WDATA;
+            iROBOT2018_BAL2 <= X"000000" &
+                               MyLittleCRC(iROBOT2018_BAL2(7 downto 0),
+                                           iMST_WDATA(0));
 
           when others =>
         end case;
@@ -1003,6 +1064,7 @@ begin
       iMST_RDATA <= (others => '1');
       iBSTR_FIFO_RD <= '0';
       iBSTR_FIFO_DEBUG <= (others => '0');
+      iSPI_DBG_CRC_RD <= '0';
     elsif (iMST_READ = '1') then
       case iMST_ADDR(11 downto 2) is
         -- timer & reset
@@ -1343,9 +1405,11 @@ begin
         when "0100111000" => -- 0x800084e0 -- robot_reg[0x138]
           iMST_RDATA <= X"0000000" & "00" & stp_switch1 & stp_switch0;
         when "0100111001" => -- 0x800084e4 -- robot_reg[0x139]
-          iMST_RDATA <= (others => '0');
+          iMST_RDATA <= iSPI_DBG_CRC_RDATA;
+          iSPI_DBG_CRC_RD <= '1';
         when "0100111010" => -- 0x800084e8 -- robot_reg[0x13a]
-          iMST_RDATA <= (others => '0');
+          iMST_RDATA <= X"000000" & "000000" &
+                        iSPI_DBG_CRC_EMPTY & iSPI_DBG_CRC_FULL;
         when "0100111011" => -- 0x800084ec -- robot_reg[0x13b]
           iMST_RDATA <= (others => '0');
         when "0100111100" => -- 0x800084f0 -- robot_reg[0x13c]
@@ -1362,6 +1426,23 @@ begin
     else
       iMST_RDATA <= (others => '1');
       iBSTR_FIFO_RD <= '0';
+      iSPI_DBG_CRC_RD <= '0';
+    end if;
+  end process;
+
+-- APB Sync process
+  sync_proc : process (presetn, pclk)
+  begin
+    if presetn = '0' then
+      iSPI_DBG_CRC_RD_OLD  <= '0';
+      iSPI_DBG_CRC_RD_SYNC <= '0';
+    elsif rising_edge(pclk) then
+      if (iSPI_DBG_CRC_RD_OLD = '0') and (iSPI_DBG_CRC_RD = '1') then
+        iSPI_DBG_CRC_RD_SYNC <= '1';
+      else
+        iSPI_DBG_CRC_RD_SYNC <= '0';
+      end if;
+      iSPI_DBG_CRC_RD_OLD  <= iSPI_DBG_CRC_RD;
     end if;
   end process;
 
