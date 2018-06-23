@@ -168,6 +168,7 @@ component core
     -- Systeme
     n_reset_i           : in std_logic;
     clk_i               : in std_logic;
+    clk_i_100           : in std_logic;
 
     -- serial interface
     rx                  : in  std_logic;
@@ -248,7 +249,8 @@ end component;
 component my_altera_pll
   port (
     inclk0 : in std_logic := '0';
-    c0     : out std_logic 
+    c0     : out std_logic;
+    c1     : OUT std_logic
     );
 end component;
 
@@ -275,6 +277,7 @@ signal rx1,rx2          : std_logic;
 signal tx1,tx2          : std_logic;
 
 signal clk_o            : std_logic;
+signal clk_100mhz       : std_logic;
 
 signal debug_test_out   : std_logic;
 signal debug_test       : std_logic_vector(31 downto 0);
@@ -293,6 +296,7 @@ begin
     port map(
       inclk0 => CLK
       , c0   => clk_o
+      , c1   => clk_100mhz
       );
 
   -- UARTs
@@ -309,6 +313,7 @@ begin
     port map(
       n_reset_i     => n_reset_i
       , clk_i       => clk_o
+      , clk_i_100   => clk_100mhz
 
       -- serial interface
       , rx          => rx1

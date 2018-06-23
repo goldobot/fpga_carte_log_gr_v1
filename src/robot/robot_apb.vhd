@@ -16,6 +16,7 @@ entity robot_apb is
   port(
       pclk                : in  std_logic
     ; presetn             : in  std_logic
+    ; clk_i_100           : in  std_logic
     -- APB slave
     ; paddr               : in  std_logic_vector(31 downto 0)
     ; psel                : in  std_logic
@@ -492,6 +493,7 @@ begin
 
   c_robot_spi_slave : ROBOT_SPI_SLAVE
     port map (
+--      CLK => clk_i_100,
       CLK => pclk,
       RESET => iRESET,
       SPI_MASTER_RD => iSPI_MASTER_RD,
