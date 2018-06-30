@@ -234,6 +234,9 @@ int main () {
     unsigned int robot2018_rack_limit_r = 0;
     unsigned int robot2018_stp_cur_pos = 0x4000;
     unsigned int robot2018_stp_target_pos = 0x4000;
+    int robot2018_rack_offset_l = 0;
+    int robot2018_rack_offset_c = 0;
+    int robot2018_rack_offset_r = 0;
 
 
     i2c_test_data = 0;
@@ -438,19 +441,20 @@ int main () {
         switch (robot2018_rack_cmd) {
         case 1:
           /* droite */
-          robot_reg[0x131] = robot2018_rack_limit_r;
+          robot_reg[0x131] = robot2018_rack_limit_r + robot2018_rack_offset_r;
           robot2018_rack_state = 1;
           robot_reg[0x13c] = 0x42424242;
           break;
         case 2:
           /* centre */
-          robot_reg[0x131] = (robot2018_rack_limit_r+robot2018_rack_limit_l)/2;
+          robot_reg[0x131] = (robot2018_rack_limit_r+robot2018_rack_limit_l)/2 
+            + robot2018_rack_offset_c;
           robot2018_rack_state = 2;
           robot_reg[0x13c] = 0x42424242;
           break;
         case 3:
           /* gauche */
-          robot_reg[0x131] = robot2018_rack_limit_l;
+          robot_reg[0x131] = robot2018_rack_limit_l + robot2018_rack_offset_l;
           robot2018_rack_state = 3;
           robot_reg[0x13c] = 0x42424242;
           break;
@@ -465,6 +469,31 @@ int main () {
           robot_reg[0x131] = 0x7fff;
           robot2018_rack_state = 13;
           robot_reg[0x13c] = 0x42424242;
+          break;
+        case 21:
+          /* forcer rack_limit droite */
+          robot2018_rack_limit_r = robot_reg[0x13d];
+          robot_reg[0x13c] = 0;
+          break;
+        case 23:
+          /* forcer rack_limit gauche */
+          robot2018_rack_limit_l = robot_reg[0x13d];
+          robot_reg[0x13c] = 0;
+          break;
+        case 31:
+          /* offset droite */
+          robot2018_rack_offset_r = robot_reg[0x13d];
+          robot_reg[0x13c] = 0;
+          break;
+        case 32:
+          /* offset centre */
+          robot2018_rack_offset_c = robot_reg[0x13d];
+          robot_reg[0x13c] = 0;
+          break;
+        case 33:
+          /* offset gauche */
+          robot2018_rack_offset_l = robot_reg[0x13d];
+          robot_reg[0x13c] = 0;
           break;
         case 0xdeadbeef:
           /* arret d'urgence */
