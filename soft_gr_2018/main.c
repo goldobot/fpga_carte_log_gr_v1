@@ -230,13 +230,13 @@ int main () {
     unsigned int robot2018_rack_state = 0;
     unsigned int robot2018_rack_cmd = 0;
     unsigned int robot2018_stp_switch0 = 0;
-    unsigned int robot2018_rack_limit_l = 0x7fff;
-    unsigned int robot2018_rack_limit_r = 0;
+    unsigned int robot2018_rack_limit_l = 17745;
+    unsigned int robot2018_rack_limit_r = 15006;
     unsigned int robot2018_stp_cur_pos = 0x4000;
     unsigned int robot2018_stp_target_pos = 0x4000;
-    int robot2018_rack_offset_l = 0;
-    int robot2018_rack_offset_c = 0;
-    int robot2018_rack_offset_r = 0;
+    int robot2018_rack_offset_l =  20; /* 0x00000020 test OK */
+    int robot2018_rack_offset_c = -18; /* 0xffffff10 test OK */
+    int robot2018_rack_offset_r = -75; /* 0xffffffb8 test OK */
 
 
     i2c_test_data = 0;
@@ -318,6 +318,9 @@ int main () {
     /* robot reset */
     robot_reg[R_ROBOT_RESET] = 1;
     robot_reg[R_ROBOT_RESET] = 0;
+
+    /* vitesse max pour le stepper */
+    robot_reg[0x130] = 0x00080000;
 
     for (;;) {
       robot_timer_val = robot_reg[R_ROBOT_TIMER];
@@ -429,6 +432,18 @@ int main () {
           robot_reg[R_ROBOT_RESET] = 1;
           robot_reg[R_ROBOT_RESET] = 0;
 
+          /* ROBOT 2018 */
+          robot2018_rack_state = 0;
+          robot2018_rack_cmd = 0;
+          robot2018_stp_switch0 = 0;
+          robot2018_rack_limit_l = 17745 - ( 20);
+          robot2018_rack_limit_r = 15006 - (-75);
+          robot2018_stp_cur_pos = 0x4000;
+          robot2018_stp_target_pos = 0x4000;
+          robot2018_rack_offset_l =  20;
+          robot2018_rack_offset_c = -18;
+          robot2018_rack_offset_r = -75;
+
           robot_timer_val = robot_reg[R_ROBOT_TIMER];
           robot_sync_barrier = robot_timer_val + ROBOT_SAMPLING_INT;
         }
@@ -460,13 +475,13 @@ int main () {
           break;
         case 11:
           /* recallage droite */
-          robot_reg[0x131] = 0;
+          robot_reg[0x131] = 0x3400;
           robot2018_rack_state = 11;
           robot_reg[0x13c] = 0x42424242;
           break;
         case 13:
           /* recallage gauche */
-          robot_reg[0x131] = 0x7fff;
+          robot_reg[0x131] = 0x4c00;
           robot2018_rack_state = 13;
           robot_reg[0x13c] = 0x42424242;
           break;
@@ -494,6 +509,27 @@ int main () {
           /* offset gauche */
           robot2018_rack_offset_l = robot_reg[0x13d];
           robot_reg[0x13c] = 0;
+          break;
+        case 42:
+          uart_putstring ( "RESET" );
+          uart_putchar ( 0xa );
+          robot_reg[R_ROBOT_RESET] = 1;
+          robot_reg[R_ROBOT_RESET] = 0;
+
+          /* ROBOT 2018 */
+          robot2018_rack_state = 0;
+          robot2018_rack_cmd = 0;
+          robot2018_stp_switch0 = 0;
+          robot2018_rack_limit_l = 17745;
+          robot2018_rack_limit_r = 15006;
+          robot2018_stp_cur_pos = 0x4000;
+          robot2018_stp_target_pos = 0x4000;
+          robot2018_rack_offset_l =  20;
+          robot2018_rack_offset_c = -18;
+          robot2018_rack_offset_r = -75;
+
+          robot_timer_val = robot_reg[R_ROBOT_TIMER];
+          robot_sync_barrier = robot_timer_val + ROBOT_SAMPLING_INT;
           break;
         case 0xdeadbeef:
           /* arret d'urgence */
