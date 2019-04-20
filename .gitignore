@@ -26,6 +26,5 @@ Make.dep
 *~
 .swp
 .*.swp
-core
 .gdbinit
 cscope.out
