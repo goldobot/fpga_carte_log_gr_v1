@@ -68,6 +68,8 @@ entity robot_apb is
     ; spi_clk             : in std_logic
     ; spi_mosi            : in std_logic
     ; spi_miso            : out std_logic
+    -- GPIO
+    ; gpio_in             : in std_logic_vector(31 downto 0)
     -- debug/test
     ; debug_test          : out std_logic_vector(31 downto 0)
   );
@@ -1341,11 +1343,12 @@ begin
         when "0100110111" => -- 0x800084dc -- robot_reg[0x137]
           iMST_RDATA <= (others => '0');
 
-          -- BAL & capteurs PETIT ROBOT 2018
+        -- BAL & capteurs PETIT ROBOT 2018
         when "0100111000" => -- 0x800084e0 -- robot_reg[0x138]
           iMST_RDATA <= X"0000000" & "00" & stp_switch1 & stp_switch0;
+        -- GPIO Audran PR 2019
         when "0100111001" => -- 0x800084e4 -- robot_reg[0x139]
-          iMST_RDATA <= (others => '0');
+          iMST_RDATA <= gpio_in;
         when "0100111010" => -- 0x800084e8 -- robot_reg[0x13a]
           iMST_RDATA <= (others => '0');
         when "0100111011" => -- 0x800084ec -- robot_reg[0x13b]

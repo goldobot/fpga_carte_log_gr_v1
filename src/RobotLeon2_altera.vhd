@@ -64,6 +64,9 @@ entity RobotLeon2_altera is
 
     ; GPIO_0_IN1          : in std_logic
 
+    ; GPIO_000            : in std_logic
+    ; GPIO_001            : in std_logic
+
     ; GPIO_003            : in std_logic
 
     ; GPIO_005            : in std_logic
@@ -238,6 +241,9 @@ component core
     stp_switch0         : in std_logic;
     stp_switch1         : in std_logic;
 
+    -- GPIO
+    gpio_in             : in std_logic_vector(31 downto 0);
+
     -- LEDS
     leds                : out std_logic_vector(7 downto 0);
 
@@ -285,6 +291,8 @@ signal debug_test       : std_logic_vector(31 downto 0);
 signal iSLV_SPI1_MISO   : std_logic;
 
 signal iDEBUG_SPI       : std_logic;
+
+signal iGPIO_IN         : std_logic_vector(31 downto 0);
 
 begin
 
@@ -410,12 +418,26 @@ begin
       , stp_switch0  => STP_SWITCH0
       , stp_switch1  => STP_SWITCH1
 
+      -- GPIO_IN
+      , gpio_in      => iGPIO_IN
+
       -- LEDS
-      , leds        => core_leds
+      , leds         => core_leds
 
       -- debug/test
-      , debug_test  => debug_test
+      , debug_test   => debug_test
       );
+
+  -- GPIO Audran : C6 & C5 & C4 & C3 & C2 & C1
+  gpio_audran_proc : process( n_reset, clk_o )
+  begin
+    if ( n_reset = '0' ) then
+      iGPIO_IN <= (others => '0');
+    elsif rising_edge( clk_o ) then
+      iGPIO_IN <= "00000000000000000000000000" & GPIO_212 & GPIO_208 & GPIO_211 & GPIO_207 & GPIO_206 & GPIO_205;
+    end if;
+  end process gpio_audran_proc;
+
 
 -- FIXME : TODO ++
 -- disble this when I2C master enabled
@@ -474,7 +496,9 @@ begin
   -- TEST INTEGRATION carte_log_gr_v1
 
   debug_test_out <= GPIO_0_IN0 when (debug_test = X"80000000") else
+                    GPIO_000   when (debug_test = X"80000001") else
                     GPIO_0_IN1 when (debug_test = X"80000002") else
+                    GPIO_001   when (debug_test = X"80000003") else
                     GPIO_003   when (debug_test = X"80000005") else
                     GPIO_005   when (debug_test = X"80000007") else
                     GPIO_014   when (debug_test = X"80000010") else -- FAIL !

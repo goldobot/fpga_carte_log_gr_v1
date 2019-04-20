@@ -119,7 +119,7 @@ set_location_assignment PIN_B12 -to PWM_SERVO2
 set_location_assignment PIN_D12 -to PWM_SERVO3
 set_location_assignment PIN_B16 -to PWM_SERVO4
 set_location_assignment PIN_C14 -to PWM_SERVO5
-#set_location_assignment PIN_C16 -to PWM_SERVO6
+set_location_assignment PIN_C16 -to PWM_SERVO6
 set_location_assignment PIN_C15 -to PWM_SERVO7
 set_location_assignment PIN_N9  -to PWM_SERVO8
 set_location_assignment PIN_N12 -to PWM_SERVO9
@@ -133,29 +133,15 @@ set_location_assignment PIN_A6  -to PWM_POMPE0
 set_location_assignment PIN_D6  -to DIR_POMPE0
 set_location_assignment PIN_B6  -to PWM_POMPE1
 set_location_assignment PIN_B7  -to DIR_POMPE1
-##set_location_assignment PIN_A5  -to PWM_MOTOR2
 set_location_assignment PIN_A2  -to PWM_MOTOR2
-##set_location_assignment PIN_D5  -to DIR_MOTOR2
 set_location_assignment PIN_B3  -to DIR_MOTOR2
-
-# ----------------------------
-# Encodeur tapis
-# ----------------------------
-set_location_assignment PIN_D3  -to CONVEYOR_ENC_CH_A
-set_location_assignment PIN_C3  -to CONVEYOR_ENC_CH_B
 
 # -------
 # STEPPER
 # -------
-##set_location_assignment PIN_A2  -to STP4_PWM
 set_location_assignment PIN_A4  -to STP4_PWM
-##set_location_assignment PIN_B3  -to STP4_DIR
 set_location_assignment PIN_B5  -to STP4_DIR
-##set_location_assignment PIN_D3  -to STP5_PWM
-##set_location_assignment PIN_C3  -to STP5_DIR
-##set_location_assignment PIN_A4  -to STP_SWITCH0
 set_location_assignment PIN_A5  -to STP_SWITCH0
-##set_location_assignment PIN_B5  -to STP_SWITCH1
 set_location_assignment PIN_D5  -to STP_SWITCH1
 
 # ----
@@ -164,9 +150,9 @@ set_location_assignment PIN_D5  -to STP_SWITCH1
 
 # Bank 1 : x 36
 set_location_assignment PIN_A8  -to GPIO_0_IN0
-#set_location_assignment PIN_D3  -to GPIO_000
+set_location_assignment PIN_D3  -to GPIO_000
 set_location_assignment PIN_B8  -to GPIO_0_IN1
-#set_location_assignment PIN_C3  -to GPIO_001
+set_location_assignment PIN_C3  -to GPIO_001
 #set_location_assignment PIN_A2  -to GPIO_002
 set_location_assignment PIN_A3  -to GPIO_003
 #set_location_assignment PIN_B3  -to GPIO_004
