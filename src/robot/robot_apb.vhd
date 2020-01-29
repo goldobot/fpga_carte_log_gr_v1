@@ -24,6 +24,9 @@ entity robot_apb is
     ; pwrite              : in  std_logic
     ; pwdata              : in  std_logic_vector(31 downto 0)
     ; prdata              : out std_logic_vector(31 downto 0)
+    -- odometry encoder interface
+    ; quad_a_1            : in std_logic
+    ; quad_b_1            : in std_logic
     -- hcsr04 interfaces
     ; us1_trig            : out std_logic
     ; us1_echo            : in std_logic
@@ -76,6 +79,35 @@ entity robot_apb is
 end entity;
 
 architecture rtl of robot_apb is
+
+  component QuadratureCounterPorts is
+    port (
+      RESET               : in std_logic;
+      clock               : in std_logic;
+      QuadA               : in std_logic;
+      QuadB               : in std_logic;
+      Increment_4_12      : in std_logic_vector(15 downto 0);
+      SamplingInterval    : in std_logic_vector(31 downto 0);
+      AsyncReset          : in std_logic;
+      CounterValue        : buffer std_logic_vector(31 downto 0);
+      SpeedValue          : out std_logic_vector(31 downto 0);
+      SetAux1             : in std_logic;
+      SetValueAux1        : in std_logic_vector(31 downto 0);
+      CounterValueAux1    : buffer std_logic_vector(31 downto 0);
+      SpeedValueAux1      : out std_logic_vector(31 downto 0);
+
+      IncrementAuxTh      : in std_logic_vector(63 downto 0);
+      SetAuxTh            : in std_logic;
+      SetValueAuxTh       : in std_logic_vector(63 downto 0);
+      CounterValueAuxTh   : buffer std_logic_vector(63 downto 0);
+      SpeedValueAuxTh     : out std_logic_vector(63 downto 0);
+      IncrementAuxR       : in std_logic_vector(63 downto 0);
+      SetAuxR             : in std_logic;
+      SetValueAuxR        : in std_logic_vector(63 downto 0);
+      CounterValueAuxR    : buffer std_logic_vector(63 downto 0);
+      SpeedValueAuxR      : out std_logic_vector(63 downto 0)
+    );
+  end component;
 
   component ULTRASOUND_HCSR04 is
     port (
@@ -195,6 +227,12 @@ end component;
   signal iBSTR_FIFO_EMPTY     : std_logic;
   signal iBSTR_FIFO_FULL      : std_logic;
 
+  signal iODO_SAMPLING_INT    : std_logic_vector (31 downto 0);
+  signal iODO_ASYNC_RESET     : std_logic;
+  signal iODO_1_INC           : std_logic_vector (15 downto 0);
+  signal iODO_1_POS           : std_logic_vector (31 downto 0);
+  signal iODO_1_SPEED         : std_logic_vector (31 downto 0);
+
   signal iUS1_ACTUAL_DIST     : std_logic_vector (31 downto 0);
   signal iUS2_ACTUAL_DIST     : std_logic_vector (31 downto 0);
   signal iUS3_ACTUAL_DIST     : std_logic_vector (31 downto 0);
@@ -280,7 +318,9 @@ begin
 
   debug_test <= iDEBUG_REG;
 
-
+  -- FIXME : DEBUG
+  iODO_ASYNC_RESET <= iDEBUG_REG(30);
+  
 -- FIXME : TODO ++
 --  c_us1 : ULTRASOUND_HCSR04
 --    port map (
@@ -322,6 +362,34 @@ begin
   us3_trig <= '0';
   iUS3_ACTUAL_DIST <= (others => '0');
 -- FIXME : TODO --
+
+  c_quad_1 : QuadratureCounterPorts
+    port map (
+      RESET => iRESET,
+      clock => pclk,
+      QuadA => quad_a_1,
+      QuadB => quad_b_1,
+      Increment_4_12 => iODO_1_INC,
+      SamplingInterval => iODO_SAMPLING_INT,
+      AsyncReset => iODO_ASYNC_RESET,
+      CounterValue => iODO_1_POS,
+      SpeedValue => iODO_1_SPEED,
+      SetAux1 => '0',
+      SetValueAux1 => (others => '0'),
+      CounterValueAux1 => open,
+      SpeedValueAux1 => open,
+
+      IncrementAuxTh => (others => '0'),
+      SetAuxTh => '0',
+      SetValueAuxTh => (others => '0'),
+      CounterValueAuxTh => open,
+      SpeedValueAuxTh => open,
+      IncrementAuxR => (others => '0'),
+      SetAuxR => '0',
+      SetValueAuxR => (others => '0'),
+      CounterValueAuxR => open,
+      SpeedValueAuxR => open
+    );
 
   c_servo0 : SERVO
     port map (
@@ -602,6 +670,9 @@ begin
 
       iDEBUG_REG         <= X"00000042";
 
+      iODO_SAMPLING_INT  <= X"000F423F"; -- 40 ms avec pclk=25MHz
+      iODO_1_INC         <= X"1000";
+
       iSERVO0_PWM_PERIOD <= X"00040000";
       iSERVO0_PW         <= (others => '0');
       iSERVO1_PWM_PERIOD <= X"00040000";
@@ -708,11 +779,11 @@ begin
           when "0010000001" => -- 0x80008204 -- robot_reg[0x81]
             null; -- <available>
           when "0010000011" => -- 0x8000820c -- robot_reg[0x83]
-            null; -- <available>
+            iODO_1_INC <= iMST_WDATA(15 downto 0);
           when "0010000100" => -- 0x80008210 -- robot_reg[0x84]
             null; -- <available>
           when "0010000111" => -- 0x8000821c -- robot_reg[0x87]
-            null; -- <available>
+            iODO_SAMPLING_INT <= iMST_WDATA;
           when "0010001001" => -- 0x80008224 -- robot_reg[0x89]
             null; -- <available>
           when "0010001011" => -- 0x8000822c -- robot_reg[0x8b]
@@ -1065,13 +1136,13 @@ begin
 
         -- was odometry in 2016
         when "0010000001" => -- 0x80008204 -- robot_reg[0x81]
-          iMST_RDATA <= (others => '0');
+          iMST_RDATA <= iODO_1_POS;
         when "0010000011" => -- 0x8000820c -- robot_reg[0x83]
-          iMST_RDATA <= (others => '0');
+          iMST_RDATA <= X"0000" & iODO_1_INC;
         when "0010000100" => -- 0x80008210 -- robot_reg[0x84]
-          iMST_RDATA <= (others => '0');
+          iMST_RDATA <= iODO_1_SPEED;
         when "0010000111" => -- 0x8000821c -- robot_reg[0x87]
-          iMST_RDATA <= (others => '0');
+          iMST_RDATA <= iODO_SAMPLING_INT;
         when "0010001001" => -- 0x80008224 -- robot_reg[0x89]
           iMST_RDATA <= (others => '0');
         when "0010001011" => -- 0x8000822c -- robot_reg[0x8b]

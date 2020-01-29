@@ -56,16 +56,16 @@ entity RobotLeon2_altera is
     ; STP_SWITCH1         : in std_logic
 
     -- Encodeur tapis roulant
-    ; CONVEYOR_ENC_CH_A   : in std_logic
-    ; CONVEYOR_ENC_CH_B   : in std_logic
+    ; QUAD_A_1            : in std_logic
+    ; QUAD_B_1            : in std_logic
 
     -- GPIOs
     ; GPIO_0_IN0          : in std_logic
 
     ; GPIO_0_IN1          : in std_logic
 
-    ; GPIO_000            : in std_logic
-    ; GPIO_001            : in std_logic
+--    ; GPIO_000            : in std_logic
+--    ; GPIO_001            : in std_logic
 
     ; GPIO_003            : in std_logic
 
@@ -207,6 +207,10 @@ component core
     slv_miso            : out std_logic;
 
     -- ROBOT
+    -- position encoder
+    quad_a_1            : in std_logic;
+    quad_b_1            : in std_logic;
+
     -- hcsr04 interfaces
     us1_trig            : out std_logic;
     us1_echo            : in std_logic;
@@ -375,6 +379,10 @@ begin
       , slv_miso    => iSLV_SPI1_MISO
 
       -- ROBOT
+      -- position encoder
+      , quad_a_1    => QUAD_A_1
+      , quad_b_1    => QUAD_B_1
+
       -- hcsr04 interfaces
       -- FIXME : TODO
       , us1_trig => open
@@ -496,9 +504,9 @@ begin
   -- TEST INTEGRATION carte_log_gr_v1
 
   debug_test_out <= GPIO_0_IN0 when (debug_test = X"80000000") else
-                    GPIO_000   when (debug_test = X"80000001") else
+--                    GPIO_000   when (debug_test = X"80000001") else
                     GPIO_0_IN1 when (debug_test = X"80000002") else
-                    GPIO_001   when (debug_test = X"80000003") else
+--                    GPIO_001   when (debug_test = X"80000003") else
                     GPIO_003   when (debug_test = X"80000005") else
                     GPIO_005   when (debug_test = X"80000007") else
                     GPIO_014   when (debug_test = X"80000010") else -- FAIL !

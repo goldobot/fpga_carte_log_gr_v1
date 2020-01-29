@@ -52,6 +52,10 @@ entity core is
     slv_miso : out std_logic;
 
     -- ROBOT
+    -- odometric encoder interface
+    quad_a_1    : in std_logic;
+    quad_b_1    : in std_logic;
+
     -- hcsr04 interfaces
     us1_trig            : out std_logic;
     us1_echo            : in std_logic;
@@ -176,6 +180,9 @@ architecture rtl of core is
       ; pwrite              : in  std_logic
       ; pwdata              : in  std_logic_vector(31 downto 0)
       ; prdata              : out std_logic_vector(31 downto 0)
+      -- odometric encoder interface
+      ; quad_a_1            : in std_logic
+      ; quad_b_1            : in std_logic
       -- hcsr04 interfaces
       ; us1_trig            : out std_logic
       ; us1_echo            : in std_logic
@@ -473,6 +480,9 @@ begin
       pwrite              => apbi(27).pwrite,
       pwdata              => apbi(27).pwdata,
       prdata              => apbo(27).prdata,
+      -- odometric encoder interface
+      quad_a_1            => quad_a_1,
+      quad_b_1            => quad_b_1,
       -- hcsr04 interfaces
       us1_trig            => us1_trig,
       us1_echo            => us1_echo,

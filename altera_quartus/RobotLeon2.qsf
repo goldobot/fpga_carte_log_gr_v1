@@ -144,13 +144,23 @@ set_location_assignment PIN_B5  -to STP4_DIR
 set_location_assignment PIN_A5  -to STP_SWITCH0
 set_location_assignment PIN_D5  -to STP_SWITCH1
 
+
+# -----------------------------------
+# Odometry : quadrature encoders
+# -----------------------------------
+# DE0_NANO : GPIO_000
+set_location_assignment PIN_D3 -to QUAD_A_1
+# DE0_NANO : GPIO_001
+set_location_assignment PIN_C3 -to QUAD_B_1
+
+
 # ----
 # GPIO
 # ----
 
 # Bank 1 : x 36
 set_location_assignment PIN_A8  -to GPIO_0_IN0
-set_location_assignment PIN_D3  -to GPIO_000
+#set_location_assignment PIN_D3  -to GPIO_000
 set_location_assignment PIN_B8  -to GPIO_0_IN1
 set_location_assignment PIN_C3  -to GPIO_001
 #set_location_assignment PIN_A2  -to GPIO_002
@@ -309,6 +319,8 @@ set_global_assignment -name VHDL_FILE ../src/core/core.vhd
 set_global_assignment -name VHDL_FILE ../src/config/target.vhd
 set_global_assignment -name VHDL_FILE ../src/RobotLeon2_altera.vhd
 set_global_assignment -name VHDL_FILE ../src/robot/robot_apb.vhd
+set_global_assignment -name VHDL_FILE ../src/robot/QuadratureCounter.vhd
+set_global_assignment -name VHDL_FILE ../src/robot/QuadratureDecoder.vhd
 set_global_assignment -name VHDL_FILE ../src/robot/robot_i2c_slave.vhd
 set_global_assignment -name VHDL_FILE ../src/robot/i2c_slave.vhd
 set_global_assignment -name VHDL_FILE ../src/robot/ultrasound_hcsr04.vhd
