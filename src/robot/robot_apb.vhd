@@ -179,7 +179,8 @@ architecture rtl of robot_apb is
       SPI_MASTER_ADDR     : out std_logic_vector(31 downto 0);
       SPI_MASTER_DATA     : out std_logic_vector(31 downto 0);
       SPI_SLAVE_DATA      : in std_logic_vector(31 downto 0);
-      SPI_SLAVE_ACK       : in std_logic;
+      SPI_SLAVE_BUSY      : in std_logic;
+      SPI_SLAVE_ADDR      : in std_logic_vector(31 downto 0);
       SPI_SLAVE_IRQ       : out std_logic;
       DBG_MST_DATA        : out std_logic_vector(31 downto 0);
       DBG_SLV_DATA        : in std_logic_vector(31 downto 0);
@@ -308,7 +309,9 @@ end component;
   signal iSPI_MASTER_WR       : std_logic;
   signal iSPI_MASTER_ADDR     : std_logic_vector (31 downto 0);
   signal iSPI_MASTER_DATA     : std_logic_vector (31 downto 0);
+  signal iSPI_SLAVE_BUSY      : std_logic;
   signal iSPI_SLAVE_DATA      : std_logic_vector (31 downto 0);
+  signal iSPI_SLAVE_ADDR      : std_logic_vector (31 downto 0);
   signal iSPI_DBG_MST_DATA    : std_logic_vector (31 downto 0);
   signal iSPI_DBG_SLV_DATA    : std_logic_vector (31 downto 0);
 
@@ -571,7 +574,8 @@ begin
       SPI_MASTER_ADDR => iSPI_MASTER_ADDR,
       SPI_MASTER_DATA => iSPI_MASTER_DATA,
       SPI_SLAVE_DATA => iSPI_SLAVE_DATA,
-      SPI_SLAVE_ACK => '1',
+      SPI_SLAVE_BUSY => iSPI_SLAVE_BUSY,
+      SPI_SLAVE_ADDR => iSPI_SLAVE_ADDR,
       SPI_SLAVE_IRQ => open,
       DBG_MST_DATA => iSPI_DBG_MST_DATA,
       DBG_SLV_DATA => iSPI_DBG_SLV_DATA,
@@ -657,9 +661,11 @@ begin
                 (iSPI_MASTER_WR='1')) else '0';
   iMST_ADDR  <= paddr when ((psel='1') and (penable='1')) else
                 iSPI_MASTER_ADDR;
+  iSPI_SLAVE_ADDR <= iMST_ADDR;
   iMST_WDATA <= pwdata when ((psel='1') and (penable='1') and (pwrite='1')) else
                 iSPI_MASTER_DATA;
   prdata          <= iMST_RDATA;
+  iSPI_SLAVE_BUSY <= '1' when ((psel='1') and (penable='1')) else '0';
   iSPI_SLAVE_DATA <= iMST_RDATA;
 
 -- APB Write process

@@ -19,7 +19,8 @@ entity robot_spi_slave is
     SPI_MASTER_ADDR     : out std_logic_vector(31 downto 0);
     SPI_MASTER_DATA     : out std_logic_vector(31 downto 0);
     SPI_SLAVE_DATA      : in std_logic_vector(31 downto 0);
-    SPI_SLAVE_ACK       : in std_logic;
+    SPI_SLAVE_BUSY      : in std_logic;
+    SPI_SLAVE_ADDR      : in std_logic_vector(31 downto 0);
     SPI_SLAVE_IRQ       : out std_logic;
     DBG_MST_DATA        : out std_logic_vector(31 downto 0);
     DBG_SLV_DATA        : in std_logic_vector(31 downto 0);
@@ -64,6 +65,9 @@ architecture robot_spi_slave_arch of robot_spi_slave is
 
   signal iSPI_MASTER_RD    : std_logic;
   signal iSPI_MASTER_WR    : std_logic;
+
+  signal iBUS_ERROR        : std_logic;
+
 
   function RMAP_CalculateCRC (
     constant INCRC: in Std_Logic_Vector(7 downto 0);
@@ -162,6 +166,7 @@ begin
     variable iSLV_DATA_NEXT : std_logic_vector(31 downto 0) := zero32;
     variable iSEND_CRC_LFSR_NEXT : std_logic_vector(7 downto 0) := zero8;
     variable iRECV_CRC_LFSR_NEXT : std_logic_vector(7 downto 0) := zero8;
+    variable iCRC_TO_SEND_BACK   : std_logic_vector(7 downto 0) := zero8;
   begin
     if RESET = '1' then
       iRECV_SR         <= zero48;
@@ -176,6 +181,7 @@ begin
       iSPI_SLAVE_DATA  <= zero32;
       iRECV_CRC_LFSR   <= zero8;
       iSEND_CRC_LFSR   <= zero8;
+      iBUS_ERROR       <= '0';
     elsif rising_edge(CLK) then
       if (iSPI_CLK_OLD = '0') and (iSPI_CLK = '1') then
         iPERIOD_DETECT <= zero32;
@@ -189,6 +195,7 @@ begin
         iBITCNT     <= zero8;
         iREG_SELECT <= "0000";
         iRECV_CRC_LFSR <= zero8;
+        iBUS_ERROR  <= '0';
       else
 
 -- FIXME : TODO : implementer un registre de mode avec flags CPOL et CPHA
@@ -203,6 +210,10 @@ begin
           if (iBITCNT = X"04") then
             if (iREG_SELECT = X"5") then
               iSPI_MASTER_RD <= '1';
+              if ((SPI_SLAVE_BUSY='1') or (iSPI_MASTER_ADDR/=SPI_SLAVE_ADDR))
+              then
+                iBUS_ERROR <= '1';
+              end if;
             end if;
           end if;
           if (iBITCNT = X"2F") then
@@ -218,6 +229,10 @@ begin
               when X"4" =>
                 iSPI_MASTER_DATA <= iRECV_SR_NEXT(39 downto 8);
                 iSPI_MASTER_WR <= '1';
+                if ((SPI_SLAVE_BUSY='1') or (iSPI_MASTER_ADDR/=SPI_SLAVE_ADDR))
+                then
+                  iBUS_ERROR <= '1';
+                end if;
               when X"5" =>
                 null; -- SPI_SLAVE_DATA
               when others =>
@@ -266,9 +281,14 @@ begin
             if ((iREG_SELECT = X"0") or
                 (iREG_SELECT = X"1") or
                 (iREG_SELECT = X"5")) then
-              iSEND_SR <= MySwap(iSEND_CRC_LFSR_NEXT) & X"FFFFFFFFFF";
+              iCRC_TO_SEND_BACK := MySwap(iSEND_CRC_LFSR_NEXT);
             else
-              iSEND_SR <= MySwap(iRECV_CRC_LFSR_NEXT) & X"FFFFFFFFFF";
+              iCRC_TO_SEND_BACK := MySwap(iRECV_CRC_LFSR_NEXT);
+            end if;
+            if (iBUS_ERROR = '0') then
+              iSEND_SR <= iCRC_TO_SEND_BACK & X"FFFFFFFFFF";
+            else
+              iSEND_SR <= (not iCRC_TO_SEND_BACK) & X"FFFFFFFFFF";
             end if;
           else
             iSEND_CRC_LFSR_NEXT := MyLittleCRC(iSEND_CRC_LFSR,iSEND_SR(47));
@@ -282,7 +302,12 @@ begin
         iSPI_MASTER_WR <= '0';
       end if;
       if (iSPI_MASTER_RD = '1') then
-        iSPI_SLAVE_DATA <= SPI_SLAVE_DATA;
+        if ((SPI_SLAVE_BUSY='1') or (iSPI_MASTER_ADDR/=SPI_SLAVE_ADDR)) then
+          iBUS_ERROR <= '1';
+          iSPI_SLAVE_DATA <= X"ABADCAFE";
+        else
+          iSPI_SLAVE_DATA <= SPI_SLAVE_DATA;
+        end if;
         iSPI_MASTER_RD <= '0';
       end if;
     end if;
