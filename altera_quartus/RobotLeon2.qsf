@@ -106,75 +106,46 @@ set_location_assignment PIN_C8 -to UART1_RX
 # ---------
 set_location_assignment PIN_K16 -to SLV_SPI1_MISO
 set_location_assignment PIN_L15 -to SLV_SPI1_MOSI
-set_location_assignment PIN_N11 -to SLV_SPI1_SCK
-# FIXME : TODO
-#set_location_assignment PIN_A8  -to SLV_SPI1_NSS
+set_location_assignment PIN_L16 -to SLV_SPI1_SCK
 
 # ---------
 # PWM servo
 # ---------
-set_location_assignment PIN_D11 -to PWM_SERVO0
-set_location_assignment PIN_A12 -to PWM_SERVO1
-set_location_assignment PIN_B12 -to PWM_SERVO2
-set_location_assignment PIN_D12 -to PWM_SERVO3
-set_location_assignment PIN_B16 -to PWM_SERVO4
-set_location_assignment PIN_C14 -to PWM_SERVO5
-set_location_assignment PIN_C16 -to PWM_SERVO6
-set_location_assignment PIN_C15 -to PWM_SERVO7
-set_location_assignment PIN_N9  -to PWM_SERVO8
-set_location_assignment PIN_N12 -to PWM_SERVO9
-set_location_assignment PIN_P9  -to PWM_SERVO10
-set_location_assignment PIN_P11 -to PWM_SERVO11
 
 # ----------------------------
 # PWM & GPIO pompes et moteurs
 # ----------------------------
-set_location_assignment PIN_A6  -to PWM_POMPE0
-set_location_assignment PIN_D6  -to DIR_POMPE0
-set_location_assignment PIN_B6  -to PWM_POMPE1
-set_location_assignment PIN_B7  -to DIR_POMPE1
-set_location_assignment PIN_A2  -to PWM_MOTOR2
-set_location_assignment PIN_B3  -to DIR_MOTOR2
 
 # -------
 # STEPPER
 # -------
-set_location_assignment PIN_A4  -to STP4_PWM
-set_location_assignment PIN_B5  -to STP4_DIR
-set_location_assignment PIN_A5  -to STP_SWITCH0
-set_location_assignment PIN_D5  -to STP_SWITCH1
-
 
 # -----------------------------------
 # Odometry : quadrature encoders
 # -----------------------------------
-# DE0_NANO : GPIO_000
-set_location_assignment PIN_D3 -to QUAD_A_1
-# DE0_NANO : GPIO_001
-set_location_assignment PIN_C3 -to QUAD_B_1
-
 
 # ----
 # GPIO
 # ----
 
+
 # Bank 1 : x 36
 set_location_assignment PIN_A8  -to GPIO_0_IN0
-#set_location_assignment PIN_D3  -to GPIO_000
+set_location_assignment PIN_D3  -to GPIO_000
 set_location_assignment PIN_B8  -to GPIO_0_IN1
 set_location_assignment PIN_C3  -to GPIO_001
-#set_location_assignment PIN_A2  -to GPIO_002
+set_location_assignment PIN_A2  -to GPIO_002
 set_location_assignment PIN_A3  -to GPIO_003
-#set_location_assignment PIN_B3  -to GPIO_004
+set_location_assignment PIN_B3  -to GPIO_004
 set_location_assignment PIN_B4  -to GPIO_005
-#set_location_assignment PIN_A4  -to GPIO_006
-#set_location_assignment PIN_B5  -to GPIO_007
-#set_location_assignment PIN_A5  -to GPIO_008
-#set_location_assignment PIN_D5  -to GPIO_009
-#set_location_assignment PIN_B6  -to GPIO_010
-#set_location_assignment PIN_A6  -to GPIO_011
-#set_location_assignment PIN_B7  -to GPIO_012
-#set_location_assignment PIN_D6  -to GPIO_013
+set_location_assignment PIN_A4  -to GPIO_006
+set_location_assignment PIN_B5  -to GPIO_007
+set_location_assignment PIN_A5  -to GPIO_008
+set_location_assignment PIN_D5  -to GPIO_009
+set_location_assignment PIN_B6  -to GPIO_010
+set_location_assignment PIN_A6  -to GPIO_011
+set_location_assignment PIN_B7  -to GPIO_012
+set_location_assignment PIN_D6  -to GPIO_013
 set_location_assignment PIN_A7  -to GPIO_014
 set_location_assignment PIN_C6  -to GPIO_015
 #set_location_assignment PIN_C8  -to GPIO_016
@@ -191,10 +162,10 @@ set_location_assignment PIN_E11 -to GPIO_026
 set_location_assignment PIN_E10 -to GPIO_027
 set_location_assignment PIN_C11 -to GPIO_028
 set_location_assignment PIN_B11 -to GPIO_029
-#set_location_assignment PIN_A12 -to GPIO_030
-#set_location_assignment PIN_D11 -to GPIO_031
-#set_location_assignment PIN_D12 -to GPIO_032
-#set_location_assignment PIN_B12 -to GPIO_033
+set_location_assignment PIN_A12 -to GPIO_030
+set_location_assignment PIN_D11 -to GPIO_031
+set_location_assignment PIN_D12 -to GPIO_032
+set_location_assignment PIN_B12 -to GPIO_033
 
 # Bank 2 : x 36
 set_location_assignment PIN_T9  -to GPIO_1_IN0
@@ -209,13 +180,13 @@ set_location_assignment PIN_R12 -to GPIO_106
 set_location_assignment PIN_T11 -to GPIO_107
 set_location_assignment PIN_T10 -to GPIO_108
 set_location_assignment PIN_R11 -to GPIO_109
-#set_location_assignment PIN_P11 -to GPIO_110
+set_location_assignment PIN_P11 -to GPIO_110
 set_location_assignment PIN_R10 -to GPIO_111
-#set_location_assignment PIN_N12 -to GPIO_112
-#set_location_assignment PIN_P9  -to GPIO_113
-#set_location_assignment PIN_N9  -to GPIO_114
-#set_location_assignment PIN_N11 -to GPIO_115
-set_location_assignment PIN_L16 -to GPIO_116
+set_location_assignment PIN_N12 -to GPIO_112
+set_location_assignment PIN_P9  -to GPIO_113
+set_location_assignment PIN_N9  -to GPIO_114
+set_location_assignment PIN_N11 -to GPIO_115
+#set_location_assignment PIN_L16 -to GPIO_116
 #set_location_assignment PIN_K16 -to GPIO_117
 set_location_assignment PIN_R16 -to GPIO_118
 #set_location_assignment PIN_L15 -to GPIO_119
@@ -239,10 +210,10 @@ set_location_assignment PIN_E15 -to GPIO_2_IN0
 set_location_assignment PIN_E16 -to GPIO_2_IN1
 set_location_assignment PIN_M16 -to GPIO_2_IN2
 set_location_assignment PIN_A14 -to GPIO_200
-#set_location_assignment PIN_B16 -to GPIO_201
-#set_location_assignment PIN_C14 -to GPIO_202
+set_location_assignment PIN_B16 -to GPIO_201
+set_location_assignment PIN_C14 -to GPIO_202
 set_location_assignment PIN_C16 -to GPIO_203
-#set_location_assignment PIN_C15 -to GPIO_204
+set_location_assignment PIN_C15 -to GPIO_204
 set_location_assignment PIN_D16 -to GPIO_205
 set_location_assignment PIN_D15 -to GPIO_206
 set_location_assignment PIN_D14 -to GPIO_207

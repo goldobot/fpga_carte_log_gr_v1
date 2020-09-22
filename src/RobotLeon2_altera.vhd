@@ -25,51 +25,55 @@ entity RobotLeon2_altera is
     ; SLV_SPI1_MOSI       : in std_logic
 
     -- PWM SERVO
-    ; PWM_SERVO0          : out std_logic
-    ; PWM_SERVO1          : out std_logic
-    ; PWM_SERVO2          : out std_logic
-    ; PWM_SERVO3          : out std_logic
-    ; PWM_SERVO4          : out std_logic
-    ; PWM_SERVO5          : out std_logic
+--    ; PWM_SERVO0          : out std_logic
+--    ; PWM_SERVO1          : out std_logic
+--    ; PWM_SERVO2          : out std_logic
+--    ; PWM_SERVO3          : out std_logic
+--    ; PWM_SERVO4          : out std_logic
+--    ; PWM_SERVO5          : out std_logic
 -- FIXME : TODO : trouver un autre pin
---    ; PWM_SERVO6        : out std_logic
-    ; PWM_SERVO7          : out std_logic
-    ; PWM_SERVO8          : out std_logic
-    ; PWM_SERVO9          : out std_logic
-    ; PWM_SERVO10         : out std_logic
-    ; PWM_SERVO11         : out std_logic
+----    ; PWM_SERVO6        : out std_logic
+--    ; PWM_SERVO7          : out std_logic
+--    ; PWM_SERVO8          : out std_logic
+--    ; PWM_SERVO9          : out std_logic
+--    ; PWM_SERVO10         : out std_logic
+--    ; PWM_SERVO11         : out std_logic
 
     -- PWM POMPE & MOTERUS
-    ; PWM_POMPE0          : out std_logic
-    ; DIR_POMPE0          : out std_logic
-    ; PWM_POMPE1          : out std_logic
-    ; DIR_POMPE1          : out std_logic
-    ; PWM_MOTOR2          : out std_logic
-    ; DIR_MOTOR2          : out std_logic
+--    ; PWM_POMPE0          : out std_logic
+--    ; DIR_POMPE0          : out std_logic
+--    ; PWM_POMPE1          : out std_logic
+--    ; DIR_POMPE1          : out std_logic
+--    ; PWM_MOTOR2          : out std_logic
+--    ; DIR_MOTOR2          : out std_logic
 
     -- STEPPER
-    ; STP4_PWM            : out std_logic
-    ; STP4_DIR            : out std_logic
---    ; STP5_PWM            : out std_logic -- FIXME : TODO
---    ; STP5_DIR            : out std_logic -- FIXME : TODO
-    ; STP_SWITCH0         : in std_logic
-    ; STP_SWITCH1         : in std_logic
+--    ; STP4_PWM            : out std_logic
+--    ; STP4_DIR            : out std_logic
+--    ; STP5_PWM            : out std_logic
+--    ; STP5_DIR            : out std_logic
+--    ; STP_SWITCH0         : in std_logic
+--    ; STP_SWITCH1         : in std_logic
 
     -- Encodeur tapis roulant
-    ; QUAD_A_1            : in std_logic
-    ; QUAD_B_1            : in std_logic
+--    ; QUAD_A_1            : in std_logic
+--    ; QUAD_B_1            : in std_logic
 
     -- GPIOs
     ; GPIO_0_IN0          : in std_logic
 
     ; GPIO_0_IN1          : in std_logic
 
---    ; GPIO_000            : in std_logic
---    ; GPIO_001            : in std_logic
+    ; GPIO_000            : in std_logic
+    ; GPIO_001            : in std_logic
 
     ; GPIO_003            : in std_logic
-
+    ; GPIO_004            : in std_logic
     ; GPIO_005            : in std_logic
+    ; GPIO_006            : in std_logic
+    ; GPIO_007            : in std_logic
+    ; GPIO_008            : in std_logic
+    ; GPIO_009            : in std_logic
 
     ; GPIO_014            : in std_logic
     ; GPIO_015            : in std_logic
@@ -87,7 +91,7 @@ entity RobotLeon2_altera is
     ; GPIO_028            : in std_logic
     ; GPIO_029            : in std_logic
     ; GPIO_030            : in std_logic
-
+    ; GPIO_031            : in std_logic
     ; GPIO_032            : in std_logic
     ; GPIO_033            : in std_logic
 
@@ -108,11 +112,11 @@ entity RobotLeon2_altera is
     ; GPIO_112            : in std_logic
     ; GPIO_113            : in std_logic
     ; GPIO_114            : in std_logic
-
-    ; GPIO_116            : in std_logic
-
+    ; GPIO_115            : in std_logic
+--    ; GPIO_116            : in std_logic
+--    ; GPIO_117            : in std_logic
     ; GPIO_118            : in std_logic
-
+--    ; GPIO_119            : in std_logic
     ; GPIO_120            : in std_logic
     ; GPIO_121            : in std_logic
     ; GPIO_122            : in std_logic
@@ -380,8 +384,10 @@ begin
 
       -- ROBOT
       -- position encoder
-      , quad_a_1    => QUAD_A_1
-      , quad_b_1    => QUAD_B_1
+--      , quad_a_1    => QUAD_A_1
+--      , quad_b_1    => QUAD_B_1
+      , quad_a_1    => '0'
+      , quad_b_1    => '0'
 
       -- hcsr04 interfaces
       -- FIXME : TODO
@@ -395,36 +401,54 @@ begin
       -- misc actuator interfaces
 
       -- SERVOS
-      , pwm_servo0   => PWM_SERVO0
-      , pwm_servo1   => PWM_SERVO1
-      , pwm_servo2   => PWM_SERVO2
-      , pwm_servo3   => PWM_SERVO3
-      , pwm_servo4   => PWM_SERVO4
-      , pwm_servo5   => PWM_SERVO5
+--      , pwm_servo0   => PWM_SERVO0
+--      , pwm_servo1   => PWM_SERVO1
+--      , pwm_servo2   => PWM_SERVO2
+--      , pwm_servo3   => PWM_SERVO3
+--      , pwm_servo4   => PWM_SERVO4
+--      , pwm_servo5   => PWM_SERVO5
+      , pwm_servo0   => open
+      , pwm_servo1   => open
+      , pwm_servo2   => open
+      , pwm_servo3   => open
+      , pwm_servo4   => open
+      , pwm_servo5   => open
 -- FIXME : TODO
 --      , pwm_servo6   => PWM_SERVO2
-      , pwm_servo6   => open
-      , pwm_servo7   => PWM_SERVO7
-      , pwm_servo8   => PWM_SERVO8
-      , pwm_servo9   => PWM_SERVO9
-      , pwm_servo10  => PWM_SERVO10
-      , pwm_servo11  => PWM_SERVO11
+--      , pwm_servo6   => open
+
+--      , pwm_servo7   => PWM_SERVO7
+--      , pwm_servo8   => PWM_SERVO8
+--      , pwm_servo9   => PWM_SERVO9
+--      , pwm_servo10  => PWM_SERVO10
+--      , pwm_servo11  => PWM_SERVO11
+      , pwm_servo7   => open
+      , pwm_servo8   => open
+      , pwm_servo9   => open
+      , pwm_servo10  => open
+      , pwm_servo11  => open
 
       -- POMPES
-      , pwm_pump0    => PWM_POMPE0
-      , dir_pump0    => DIR_POMPE0
-      , pwm_pump1    => PWM_POMPE1
-      , dir_pump1    => DIR_POMPE1
-      , pwm_motor2   => PWM_MOTOR2
-      , dir_motor2   => DIR_MOTOR2
+--      , pwm_pump0    => PWM_POMPE0
+--      , dir_pump0    => DIR_POMPE0
+--      , pwm_pump1    => PWM_POMPE1
+--      , dir_pump1    => DIR_POMPE1
+--      , pwm_motor2   => PWM_MOTOR2
+--      , dir_motor2   => DIR_MOTOR2
+      , pwm_pump0    => open
+      , dir_pump0    => open
+      , pwm_pump1    => open
+      , dir_pump1    => open
+      , pwm_motor2   => open
+      , dir_motor2   => open
 
       -- STEPPERS
-      , stp_0_step   => STP4_PWM
-      , stp_0_dir    => STP4_DIR
-      , stp_1_step   => open -- FIXME : TODO
-      , stp_1_dir    => open -- FIXME : TODO
-      , stp_switch0  => STP_SWITCH0
-      , stp_switch1  => STP_SWITCH1
+      , stp_0_step   => open
+      , stp_0_dir    => open
+      , stp_1_step   => open
+      , stp_1_dir    => open
+      , stp_switch0  => '0'
+      , stp_switch1  => '0'
 
       -- GPIO_IN
       , gpio_in      => iGPIO_IN
@@ -436,13 +460,25 @@ begin
       , debug_test   => debug_test
       );
 
-  -- GPIO Audran : C6 & C5 & C4 & C3 & C2 & C1
+  -- GPIO Audran :                           GPIO_2_IN0 & GPIO_2_IN2 &
+  --               GPIO_2_IN1 & GPIO_200   & GPIO_210   & GPIO_212   &
+  --               GPIO_211   & GPIO_106   & GPIO_104   & GPIO_105   &
+  --               GPIO_103   & GPIO_102   & GPIO_005   & GPIO_004   &
+  --               GPIO_007   & GPIO_006   & GPIO_009   & GPIO_008   &
+  --               GPIO_101   & GPIO_1_IN1 & GPIO_100   & GPIO_1_IN0
   gpio_audran_proc : process( n_reset, clk_o )
   begin
     if ( n_reset = '0' ) then
       iGPIO_IN <= (others => '0');
     elsif rising_edge( clk_o ) then
-      iGPIO_IN <= "00000000000000000000000000" & GPIO_212 & GPIO_208 & GPIO_211 & GPIO_207 & GPIO_206 & GPIO_205;
+      iGPIO_IN <= "0000" & 
+                  "0000" & 
+                  '0'         & '0'        & GPIO_2_IN0 & GPIO_2_IN2 & 
+                   GPIO_2_IN1 & GPIO_200   & GPIO_210   & GPIO_212   & 
+                   GPIO_211   & GPIO_106   & GPIO_104   & GPIO_105   & 
+                   GPIO_103   & GPIO_102   & GPIO_005   & GPIO_004   & 
+                   GPIO_007   & GPIO_006   & GPIO_009   & GPIO_008   & 
+                   GPIO_101   & GPIO_1_IN1 & GPIO_100   & GPIO_1_IN0;
     end if;
   end process gpio_audran_proc;
 
@@ -504,11 +540,16 @@ begin
   -- TEST INTEGRATION carte_log_gr_v1
 
   debug_test_out <= GPIO_0_IN0 when (debug_test = X"80000000") else
---                    GPIO_000   when (debug_test = X"80000001") else
+                    GPIO_000   when (debug_test = X"80000001") else
                     GPIO_0_IN1 when (debug_test = X"80000002") else
---                    GPIO_001   when (debug_test = X"80000003") else
+                    GPIO_001   when (debug_test = X"80000003") else
                     GPIO_003   when (debug_test = X"80000005") else
+                    GPIO_004   when (debug_test = X"80000006") else
                     GPIO_005   when (debug_test = X"80000007") else
+                    GPIO_006   when (debug_test = X"80000008") else
+                    GPIO_007   when (debug_test = X"80000009") else
+                    GPIO_008   when (debug_test = X"8000000a") else
+                    GPIO_009   when (debug_test = X"8000000b") else
                     GPIO_014   when (debug_test = X"80000010") else -- FAIL !
                     GPIO_015   when (debug_test = X"80000011") else
                     GPIO_018   when (debug_test = X"80000012") else
@@ -524,7 +565,7 @@ begin
                     GPIO_028   when (debug_test = X"8000001c") else
                     GPIO_029   when (debug_test = X"8000001d") else
                     GPIO_030   when (debug_test = X"8000001e") else
---                    GPIO_031   when (debug_test = X"8000001f") else
+                    GPIO_031   when (debug_test = X"8000001f") else
                     GPIO_032   when (debug_test = X"80000020") else
                     GPIO_033   when (debug_test = X"80000021") else
                     GPIO_1_IN0 when (debug_test = X"80000022") else
@@ -532,9 +573,9 @@ begin
                     GPIO_1_IN1 when (debug_test = X"80000024") else
                     GPIO_101   when (debug_test = X"80000025") else
                     GPIO_102   when (debug_test = X"80000026") else
---                    GPIO_103   when (debug_test = X"80000027") else
---                    GPIO_104   when (debug_test = X"80000028") else
---                    GPIO_105   when (debug_test = X"80000029") else
+                    GPIO_103   when (debug_test = X"80000027") else
+                    GPIO_104   when (debug_test = X"80000028") else
+                    GPIO_105   when (debug_test = X"80000029") else
                     GPIO_106   when (debug_test = X"8000002a") else
                     GPIO_107   when (debug_test = X"8000002b") else
                     GPIO_108   when (debug_test = X"8000002c") else
@@ -544,8 +585,8 @@ begin
                     GPIO_112   when (debug_test = X"80000030") else
                     GPIO_113   when (debug_test = X"80000031") else
                     GPIO_114   when (debug_test = X"80000032") else
---                    GPIO_115   when (debug_test = X"80000033") else
-                    GPIO_116   when (debug_test = X"80000034") else
+                    GPIO_115   when (debug_test = X"80000033") else
+--                    GPIO_116   when (debug_test = X"80000034") else
 --                    GPIO_117   when (debug_test = X"80000035") else
                     GPIO_118   when (debug_test = X"80000036") else
 --                    GPIO_119   when (debug_test = X"80000037") else
