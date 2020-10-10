@@ -25,19 +25,18 @@ entity RobotLeon2_altera is
     ; SLV_SPI1_MOSI       : in std_logic
 
     -- PWM SERVO
---    ; PWM_SERVO0          : out std_logic
---    ; PWM_SERVO1          : out std_logic
---    ; PWM_SERVO2          : out std_logic
---    ; PWM_SERVO3          : out std_logic
---    ; PWM_SERVO4          : out std_logic
---    ; PWM_SERVO5          : out std_logic
--- FIXME : TODO : trouver un autre pin
-----    ; PWM_SERVO6        : out std_logic
---    ; PWM_SERVO7          : out std_logic
---    ; PWM_SERVO8          : out std_logic
---    ; PWM_SERVO9          : out std_logic
---    ; PWM_SERVO10         : out std_logic
---    ; PWM_SERVO11         : out std_logic
+    ; PWM_SERVO1          : out std_logic
+    ; PWM_SERVO2          : out std_logic
+    ; PWM_SERVO3          : out std_logic
+    ; PWM_SERVO4          : out std_logic
+    ; PWM_SERVO5          : out std_logic
+    ; PWM_SERVO6          : out std_logic
+    ; PWM_SERVO7          : out std_logic
+    ; PWM_SERVO8          : out std_logic
+    ; PWM_SERVO9          : out std_logic
+    ; PWM_SERVO10         : out std_logic
+    ; PWM_SERVO11         : out std_logic
+    ; PWM_SERVO12         : out std_logic
 
     -- PWM POMPE & MOTERUS
 --    ; PWM_POMPE0          : out std_logic
@@ -78,20 +77,20 @@ entity RobotLeon2_altera is
     ; GPIO_014            : in std_logic
     ; GPIO_015            : in std_logic
 
-    ; GPIO_018            : in std_logic
-    ; GPIO_019            : in std_logic
-    ; GPIO_020            : in std_logic
-    ; GPIO_021            : in std_logic
-    ; GPIO_022            : in std_logic
-    ; GPIO_023            : in std_logic
-    ; GPIO_024            : in std_logic
-    ; GPIO_025            : in std_logic
+--    ; GPIO_018            : in std_logic
+--    ; GPIO_019            : in std_logic
+--    ; GPIO_020            : in std_logic
+--    ; GPIO_021            : in std_logic
+--    ; GPIO_022            : in std_logic
+--    ; GPIO_023            : in std_logic
+--    ; GPIO_024            : in std_logic
+--    ; GPIO_025            : in std_logic
     ; GPIO_026            : in std_logic
     ; GPIO_027            : in std_logic
-    ; GPIO_028            : in std_logic
-    ; GPIO_029            : in std_logic
-    ; GPIO_030            : in std_logic
-    ; GPIO_031            : in std_logic
+--    ; GPIO_028            : in std_logic
+--    ; GPIO_029            : in std_logic
+--    ; GPIO_030            : in std_logic
+--    ; GPIO_031            : in std_logic
     ; GPIO_032            : in std_logic
     ; GPIO_033            : in std_logic
 
@@ -401,32 +400,18 @@ begin
       -- misc actuator interfaces
 
       -- SERVOS
---      , pwm_servo0   => PWM_SERVO0
---      , pwm_servo1   => PWM_SERVO1
---      , pwm_servo2   => PWM_SERVO2
---      , pwm_servo3   => PWM_SERVO3
---      , pwm_servo4   => PWM_SERVO4
---      , pwm_servo5   => PWM_SERVO5
-      , pwm_servo0   => open
-      , pwm_servo1   => open
-      , pwm_servo2   => open
-      , pwm_servo3   => open
-      , pwm_servo4   => open
-      , pwm_servo5   => open
--- FIXME : TODO
---      , pwm_servo6   => PWM_SERVO2
---      , pwm_servo6   => open
-
---      , pwm_servo7   => PWM_SERVO7
---      , pwm_servo8   => PWM_SERVO8
---      , pwm_servo9   => PWM_SERVO9
---      , pwm_servo10  => PWM_SERVO10
---      , pwm_servo11  => PWM_SERVO11
-      , pwm_servo7   => open
-      , pwm_servo8   => open
-      , pwm_servo9   => open
-      , pwm_servo10  => open
-      , pwm_servo11  => open
+      , pwm_servo0   => PWM_SERVO1
+      , pwm_servo1   => PWM_SERVO2
+      , pwm_servo2   => PWM_SERVO3
+      , pwm_servo3   => PWM_SERVO4
+      , pwm_servo4   => PWM_SERVO5
+      , pwm_servo5   => PWM_SERVO6
+      , pwm_servo6   => PWM_SERVO7
+      , pwm_servo7   => PWM_SERVO8
+      , pwm_servo8   => PWM_SERVO9
+      , pwm_servo9   => PWM_SERVO10
+      , pwm_servo10  => PWM_SERVO11
+      , pwm_servo11  => PWM_SERVO12
 
       -- POMPES
 --      , pwm_pump0    => PWM_POMPE0
@@ -552,20 +537,20 @@ begin
                     GPIO_009   when (debug_test = X"8000000b") else
                     GPIO_014   when (debug_test = X"80000010") else -- FAIL !
                     GPIO_015   when (debug_test = X"80000011") else
-                    GPIO_018   when (debug_test = X"80000012") else
-                    GPIO_019   when (debug_test = X"80000013") else
-                    GPIO_020   when (debug_test = X"80000014") else
-                    GPIO_021   when (debug_test = X"80000015") else
-                    GPIO_022   when (debug_test = X"80000016") else
-                    GPIO_023   when (debug_test = X"80000017") else
-                    GPIO_024   when (debug_test = X"80000018") else
-                    GPIO_025   when (debug_test = X"80000019") else
+--                    GPIO_018   when (debug_test = X"80000012") else
+--                    GPIO_019   when (debug_test = X"80000013") else
+--                    GPIO_020   when (debug_test = X"80000014") else
+--                    GPIO_021   when (debug_test = X"80000015") else
+--                    GPIO_022   when (debug_test = X"80000016") else
+--                    GPIO_023   when (debug_test = X"80000017") else
+--                    GPIO_024   when (debug_test = X"80000018") else
+--                    GPIO_025   when (debug_test = X"80000019") else
                     GPIO_026   when (debug_test = X"8000001a") else
                     GPIO_027   when (debug_test = X"8000001b") else
-                    GPIO_028   when (debug_test = X"8000001c") else
-                    GPIO_029   when (debug_test = X"8000001d") else
-                    GPIO_030   when (debug_test = X"8000001e") else
-                    GPIO_031   when (debug_test = X"8000001f") else
+--                    GPIO_028   when (debug_test = X"8000001c") else
+--                    GPIO_029   when (debug_test = X"8000001d") else
+--                    GPIO_030   when (debug_test = X"8000001e") else
+--                    GPIO_031   when (debug_test = X"8000001f") else
                     GPIO_032   when (debug_test = X"80000020") else
                     GPIO_033   when (debug_test = X"80000021") else
                     GPIO_1_IN0 when (debug_test = X"80000022") else
