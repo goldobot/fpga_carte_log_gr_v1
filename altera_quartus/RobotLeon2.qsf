@@ -98,14 +98,19 @@ set_location_assignment PIN_M1 -to DIP_SW_0
 # -----------
 # MASTER UART
 # -----------
+# DE0_NANO : GPIO_017
 set_location_assignment PIN_E6 -to UART1_TX
+# DE0_NANO : GPIO_016
 set_location_assignment PIN_C8 -to UART1_RX
 
 # ---------
 # SPI SLAVE
 # ---------
+# DE0_NANO : GPIO_117
 set_location_assignment PIN_K16 -to SLV_SPI1_MISO
+# DE0_NANO : GPIO_119
 set_location_assignment PIN_L15 -to SLV_SPI1_MOSI
+# DE0_NANO : GPIO_115
 set_location_assignment PIN_N11 -to SLV_SPI1_SCK
 # FIXME : TODO
 #set_location_assignment PIN_A8  -to SLV_SPI1_NSS
@@ -113,35 +118,57 @@ set_location_assignment PIN_N11 -to SLV_SPI1_SCK
 # ---------
 # PWM servo
 # ---------
+# DE0_NANO : GPIO_031
 set_location_assignment PIN_D11 -to PWM_SERVO0
+# DE0_NANO : GPIO_030
 set_location_assignment PIN_A12 -to PWM_SERVO1
+# DE0_NANO : GPIO_033
 set_location_assignment PIN_B12 -to PWM_SERVO2
+# DE0_NANO : GPIO_032
 set_location_assignment PIN_D12 -to PWM_SERVO3
+# DE0_NANO : GPIO_201
 set_location_assignment PIN_B16 -to PWM_SERVO4
+# DE0_NANO : GPIO_202
 set_location_assignment PIN_C14 -to PWM_SERVO5
+# DE0_NANO : GPIO_203
 set_location_assignment PIN_C16 -to PWM_SERVO6
+# DE0_NANO : GPIO_204
 set_location_assignment PIN_C15 -to PWM_SERVO7
+# DE0_NANO : GPIO_114
 set_location_assignment PIN_N9  -to PWM_SERVO8
+# DE0_NANO : GPIO_112
 set_location_assignment PIN_N12 -to PWM_SERVO9
+# DE0_NANO : GPIO_113
 set_location_assignment PIN_P9  -to PWM_SERVO10
+# DE0_NANO : GPIO_110
 set_location_assignment PIN_P11 -to PWM_SERVO11
 
 # ----------------------------
 # PWM & GPIO pompes et moteurs
 # ----------------------------
+# DE0_NANO : GPIO_011
 set_location_assignment PIN_A6  -to PWM_POMPE0
+# DE0_NANO : GPIO_013
 set_location_assignment PIN_D6  -to DIR_POMPE0
+# DE0_NANO : GPIO_010
 set_location_assignment PIN_B6  -to PWM_POMPE1
+# DE0_NANO : GPIO_012
 set_location_assignment PIN_B7  -to DIR_POMPE1
+# DE0_NANO : GPIO_002
 set_location_assignment PIN_A2  -to PWM_MOTOR2
+# DE0_NANO : GPIO_004
 set_location_assignment PIN_B3  -to DIR_MOTOR2
 
 # -------
 # STEPPER
 # -------
+# DE0_NANO : GPIO_006
 set_location_assignment PIN_A4  -to STP4_PWM
+# DE0_NANO : GPIO_007
 set_location_assignment PIN_B5  -to STP4_DIR
+# DE0_NANO : GPIO_008
 set_location_assignment PIN_A5  -to STP_SWITCH0
+# DE0_NANO : GPIO_009
 set_location_assignment PIN_D5  -to STP_SWITCH1
 
 
@@ -162,7 +189,7 @@ set_location_assignment PIN_C3 -to QUAD_B_1
 set_location_assignment PIN_A8  -to GPIO_0_IN0
 #set_location_assignment PIN_D3  -to GPIO_000
 set_location_assignment PIN_B8  -to GPIO_0_IN1
-set_location_assignment PIN_C3  -to GPIO_001
+#set_location_assignment PIN_C3  -to GPIO_001
 #set_location_assignment PIN_A2  -to GPIO_002
 set_location_assignment PIN_A3  -to GPIO_003
 #set_location_assignment PIN_B3  -to GPIO_004
@@ -241,7 +268,7 @@ set_location_assignment PIN_M16 -to GPIO_2_IN2
 set_location_assignment PIN_A14 -to GPIO_200
 #set_location_assignment PIN_B16 -to GPIO_201
 #set_location_assignment PIN_C14 -to GPIO_202
-set_location_assignment PIN_C16 -to GPIO_203
+#set_location_assignment PIN_C16 -to GPIO_203
 #set_location_assignment PIN_C15 -to GPIO_204
 set_location_assignment PIN_D16 -to GPIO_205
 set_location_assignment PIN_D15 -to GPIO_206

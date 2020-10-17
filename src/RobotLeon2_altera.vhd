@@ -31,8 +31,7 @@ entity RobotLeon2_altera is
     ; PWM_SERVO3          : out std_logic
     ; PWM_SERVO4          : out std_logic
     ; PWM_SERVO5          : out std_logic
--- FIXME : TODO : trouver un autre pin
---    ; PWM_SERVO6        : out std_logic
+    ; PWM_SERVO6          : out std_logic
     ; PWM_SERVO7          : out std_logic
     ; PWM_SERVO8          : out std_logic
     ; PWM_SERVO9          : out std_logic
@@ -61,19 +60,25 @@ entity RobotLeon2_altera is
 
     -- GPIOs
     ; GPIO_0_IN0          : in std_logic
-
-    ; GPIO_0_IN1          : in std_logic
-
 --    ; GPIO_000            : in std_logic
+    ; GPIO_0_IN1          : in std_logic
 --    ; GPIO_001            : in std_logic
-
+--    ; GPIO_002            : in std_logic
     ; GPIO_003            : in std_logic
-
+--    ; GPIO_004            : in std_logic
     ; GPIO_005            : in std_logic
-
+--    ; GPIO_006            : in std_logic
+--    ; GPIO_007            : in std_logic
+--    ; GPIO_008            : in std_logic
+--    ; GPIO_009            : in std_logic
+--    ; GPIO_010            : in std_logic
+--    ; GPIO_011            : in std_logic
+--    ; GPIO_012            : in std_logic
+--    ; GPIO_013            : in std_logic
     ; GPIO_014            : in std_logic
     ; GPIO_015            : in std_logic
-
+--    ; GPIO_016            : in std_logic
+--    ; GPIO_017            : in std_logic
     ; GPIO_018            : in std_logic
     ; GPIO_019            : in std_logic
     ; GPIO_020            : in std_logic
@@ -86,10 +91,10 @@ entity RobotLeon2_altera is
     ; GPIO_027            : in std_logic
     ; GPIO_028            : in std_logic
     ; GPIO_029            : in std_logic
-    ; GPIO_030            : in std_logic
-
-    ; GPIO_032            : in std_logic
-    ; GPIO_033            : in std_logic
+--    ; GPIO_030            : in std_logic
+--    ; GPIO_031            : in std_logic
+--    ; GPIO_032            : in std_logic
+--    ; GPIO_033            : in std_logic
 
     ; GPIO_1_IN0          : in std_logic
     ; GPIO_100            : in std_logic
@@ -103,16 +108,16 @@ entity RobotLeon2_altera is
     ; GPIO_107            : in std_logic
     ; GPIO_108            : in std_logic
     ; GPIO_109            : in std_logic
-    ; GPIO_110            : in std_logic
+--    ; GPIO_110            : in std_logic
     ; GPIO_111            : in std_logic
-    ; GPIO_112            : in std_logic
-    ; GPIO_113            : in std_logic
-    ; GPIO_114            : in std_logic
-
+--    ; GPIO_112            : in std_logic
+--    ; GPIO_113            : in std_logic
+--    ; GPIO_114            : in std_logic
+--    ; GPIO_115            : in std_logic
     ; GPIO_116            : in std_logic
-
+--    ; GPIO_117            : in std_logic
     ; GPIO_118            : in std_logic
-
+--    ; GPIO_119            : in std_logic
     ; GPIO_120            : in std_logic
     ; GPIO_121            : in std_logic
     ; GPIO_122            : in std_logic
@@ -132,15 +137,15 @@ entity RobotLeon2_altera is
     ; GPIO_2_IN1          : in std_logic
     ; GPIO_2_IN2          : in std_logic
     ; GPIO_200            : in std_logic
-    ; GPIO_201            : in std_logic
-    ; GPIO_202            : in std_logic
-    ; GPIO_203            : in std_logic
-    ; GPIO_204            : in std_logic
+--    ; GPIO_201            : in std_logic
+--    ; GPIO_202            : in std_logic
+--    ; GPIO_203            : in std_logic
+--    ; GPIO_204            : in std_logic
     ; GPIO_205            : in std_logic
     ; GPIO_206            : in std_logic
     ; GPIO_207            : in std_logic
     ; GPIO_208            : in std_logic
-    -- GPIO_209 = ALTERA_nCEO
+-- GPIO_209 = ALTERA_nCEO
     ; GPIO_210            : in std_logic
     ; GPIO_211            : in std_logic
     ; GPIO_212            : in std_logic
@@ -401,9 +406,7 @@ begin
       , pwm_servo3   => PWM_SERVO3
       , pwm_servo4   => PWM_SERVO4
       , pwm_servo5   => PWM_SERVO5
--- FIXME : TODO
---      , pwm_servo6   => PWM_SERVO2
-      , pwm_servo6   => open
+      , pwm_servo6   => PWM_SERVO6
       , pwm_servo7   => PWM_SERVO7
       , pwm_servo8   => PWM_SERVO8
       , pwm_servo9   => PWM_SERVO9
@@ -507,10 +510,22 @@ begin
 --                    GPIO_000   when (debug_test = X"80000001") else
                     GPIO_0_IN1 when (debug_test = X"80000002") else
 --                    GPIO_001   when (debug_test = X"80000003") else
+--                    GPIO_002   when (debug_test = X"80000004") else
                     GPIO_003   when (debug_test = X"80000005") else
+--                    GPIO_004   when (debug_test = X"80000006") else
                     GPIO_005   when (debug_test = X"80000007") else
+--                    GPIO_006   when (debug_test = X"80000008") else
+--                    GPIO_007   when (debug_test = X"80000009") else
+--                    GPIO_008   when (debug_test = X"8000000a") else
+--                    GPIO_009   when (debug_test = X"8000000b") else
+--                    GPIO_010   when (debug_test = X"8000000c") else
+--                    GPIO_011   when (debug_test = X"8000000d") else
+--                    GPIO_012   when (debug_test = X"8000000e") else
+--                    GPIO_013   when (debug_test = X"8000000f") else
                     GPIO_014   when (debug_test = X"80000010") else -- FAIL !
                     GPIO_015   when (debug_test = X"80000011") else
+--                    GPIO_016   when (debug_test = X"80000112") else
+--                    GPIO_017   when (debug_test = X"80000113") else
                     GPIO_018   when (debug_test = X"80000012") else
                     GPIO_019   when (debug_test = X"80000013") else
                     GPIO_020   when (debug_test = X"80000014") else
@@ -523,10 +538,10 @@ begin
                     GPIO_027   when (debug_test = X"8000001b") else
                     GPIO_028   when (debug_test = X"8000001c") else
                     GPIO_029   when (debug_test = X"8000001d") else
-                    GPIO_030   when (debug_test = X"8000001e") else
+--                    GPIO_030   when (debug_test = X"8000001e") else
 --                    GPIO_031   when (debug_test = X"8000001f") else
-                    GPIO_032   when (debug_test = X"80000020") else
-                    GPIO_033   when (debug_test = X"80000021") else
+--                    GPIO_032   when (debug_test = X"80000020") else
+--                    GPIO_033   when (debug_test = X"80000021") else
                     GPIO_1_IN0 when (debug_test = X"80000022") else
                     GPIO_100   when (debug_test = X"80000023") else
                     GPIO_1_IN1 when (debug_test = X"80000024") else
@@ -539,11 +554,11 @@ begin
                     GPIO_107   when (debug_test = X"8000002b") else
                     GPIO_108   when (debug_test = X"8000002c") else
                     GPIO_109   when (debug_test = X"8000002d") else
-                    GPIO_110   when (debug_test = X"8000002e") else
+--                    GPIO_110   when (debug_test = X"8000002e") else
                     GPIO_111   when (debug_test = X"8000002f") else -- FAIL !
-                    GPIO_112   when (debug_test = X"80000030") else
-                    GPIO_113   when (debug_test = X"80000031") else
-                    GPIO_114   when (debug_test = X"80000032") else
+--                    GPIO_112   when (debug_test = X"80000030") else
+--                    GPIO_113   when (debug_test = X"80000031") else
+--                    GPIO_114   when (debug_test = X"80000032") else
 --                    GPIO_115   when (debug_test = X"80000033") else
                     GPIO_116   when (debug_test = X"80000034") else
 --                    GPIO_117   when (debug_test = X"80000035") else
@@ -567,10 +582,10 @@ begin
                     GPIO_2_IN1 when (debug_test = X"80000047") else
                     GPIO_2_IN2 when (debug_test = X"80000048") else
                     GPIO_200   when (debug_test = X"80000049") else
-                    GPIO_201   when (debug_test = X"8000004a") else
-                    GPIO_202   when (debug_test = X"8000004b") else
-                    GPIO_203   when (debug_test = X"8000004c") else -- FAIL !
-                    GPIO_204   when (debug_test = X"8000004d") else
+--                    GPIO_201   when (debug_test = X"8000004a") else
+--                    GPIO_202   when (debug_test = X"8000004b") else
+--                    GPIO_203   when (debug_test = X"8000004c") else -- FAIL !
+--                    GPIO_204   when (debug_test = X"8000004d") else
                     GPIO_205   when (debug_test = X"8000004e") else
                     GPIO_206   when (debug_test = X"8000004f") else
                     GPIO_207   when (debug_test = X"80000050") else
