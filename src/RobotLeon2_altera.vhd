@@ -306,6 +306,7 @@ signal iDEBUG_SPI       : std_logic;
 
 signal iGPIO_IN         : std_logic_vector(31 downto 0);
 
+signal leds_2020_mst_cnt    : integer;
 signal leds_2020_div_cnt    : integer;
 signal leds_2020_rgb_cnt    : integer;
 signal leds_2020_led_cnt    : integer;
@@ -511,6 +512,7 @@ begin
   leds_2020_proc : process( n_reset, clk_o )
   begin
     if ( n_reset = '0' ) then
+      leds_2020_mst_cnt    <= 0;
       leds_2020_div_cnt    <= 0;
       leds_2020_rgb_cnt    <= 0;
       leds_2020_led_cnt    <= 0;
@@ -519,6 +521,17 @@ begin
       leds_2020_blank_flag <= '1';
       LEDS_2020  <= '0';
     elsif rising_edge( clk_o ) then
+      if ( leds_2020_mst_cnt = 16000000 ) then
+        leds_2020_mst_cnt <= 0;
+        if ( leds_2020_act_led = 11 ) then
+          leds_2020_act_led <= 0;
+        else
+          leds_2020_act_led <= leds_2020_act_led + 1;
+        end if;
+      else
+        leds_2020_mst_cnt <= leds_2020_mst_cnt + 1;
+      end if;
+
       if ( leds_2020_div_cnt = 30 ) then
         leds_2020_div_cnt <= 0;
         if ( leds_2020_rgb_cnt = 23 ) then
