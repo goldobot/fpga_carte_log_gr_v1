@@ -511,7 +511,7 @@ begin
       if ( counter = 20 ) then
         leds_2020_reg <= leds_2020_reg + 1;
         counter := 0;
-        LEDS_2020 <= not LEDS_2020;
+        LEDS_2020 <= leds_2020_reg(0);
       else
         counter := counter + 1;
       end if;
