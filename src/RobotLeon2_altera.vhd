@@ -515,13 +515,13 @@ begin
         leds_2020_reg <= leds_2020_reg + 1;
         counter := 0;
 --        LEDS_2020 <= leds_2020_reg(0);
-        if ( counter < 16 ) then
-          LEDS_2020 <= '1';
-        else
-          LEDS_2020 <= '0';
-        end if;
       else
         counter := counter + 1;
+      end if;
+      if ( counter < 16 ) then
+        LEDS_2020 <= '1';
+      else
+        LEDS_2020 <= '0';
       end if;
     end if;
   end process leds_2020_proc;
