@@ -500,6 +500,9 @@ begin
   end process leds_proc;
 
 -- LEDS 2020
+-- adafruit doc :
+--   0 : T0H = 0.4us (8) T0L = 0.85us
+--   1 : T1H = 0.8us (16) T1L = 0.45us
   leds_2020_proc : process( n_reset, clk_o )
     variable counter : integer := 0;
   begin
@@ -508,10 +511,15 @@ begin
       counter := 0;
       LEDS_2020 <= '0';
     elsif rising_edge( clk_o ) then
-      if ( counter = 20 ) then
+      if ( counter = 55 ) then
         leds_2020_reg <= leds_2020_reg + 1;
         counter := 0;
-        LEDS_2020 <= leds_2020_reg(0);
+--        LEDS_2020 <= leds_2020_reg(0);
+        if ( counter < 16 ) then
+          LEDS_2020 <= '1';
+        else
+          LEDS_2020 <= '0';
+        end if;
       else
         counter := counter + 1;
       end if;
