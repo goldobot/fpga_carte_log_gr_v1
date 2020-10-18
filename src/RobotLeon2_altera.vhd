@@ -289,8 +289,6 @@ signal i2c_slv_scl_en   : std_logic;
 signal core_leds        : std_logic_vector(7 downto 0);
 signal top_leds         : std_logic_vector(7 downto 0);
 
-signal leds_2020_reg    : std_logic_vector(31 downto 0);
-
 signal n_reset_i        : std_logic;
 
 signal rx1,rx2          : std_logic;
@@ -307,6 +305,13 @@ signal iSLV_SPI1_MISO   : std_logic;
 signal iDEBUG_SPI       : std_logic;
 
 signal iGPIO_IN         : std_logic_vector(31 downto 0);
+
+signal leds_2020_div_cnt    : integer;
+signal leds_2020_rgb_cnt    : integer;
+signal leds_2020_led_cnt    : integer;
+signal leds_2020_act_led    : integer;
+signal leds_2020_bit1_flag  : std_logic;
+signal leds_2020_blank_flag : std_logic;
 
 begin
 
@@ -504,24 +509,60 @@ begin
 --   0 : T0H = 0.4us (8) T0L = 0.85us
 --   1 : T1H = 0.8us (16) T1L = 0.45us
   leds_2020_proc : process( n_reset, clk_o )
-    variable counter : integer := 0;
   begin
     if ( n_reset = '0' ) then
-      leds_2020_reg <= (others => '0');
-      counter := 0;
-      LEDS_2020 <= '0';
+      leds_2020_div_cnt    <= 0;
+      leds_2020_rgb_cnt    <= 0;
+      leds_2020_led_cnt    <= 0;
+      leds_2020_act_led    <= 0;
+      leds_2020_bit1_flag  <= '0';
+      leds_2020_blank_flag <= '1';
+      LEDS_2020  <= '0';
     elsif rising_edge( clk_o ) then
-      if ( counter = 55 ) then
-        leds_2020_reg <= leds_2020_reg + 1;
-        counter := 0;
---        LEDS_2020 <= leds_2020_reg(0);
+      if ( leds_2020_div_cnt = 30 ) then
+        leds_2020_div_cnt <= 0;
+        if ( leds_2020_rgb_cnt = 23 ) then
+          if ( leds_2020_led_cnt = 15 ) then
+            leds_2020_led_cnt <= 0;
+          else
+            leds_2020_led_cnt <= leds_2020_led_cnt + 1;
+          end if;
+          leds_2020_rgb_cnt <= 0;
+        else
+          leds_2020_rgb_cnt <= leds_2020_rgb_cnt + 1;
+        end if;
       else
-        counter := counter + 1;
+        leds_2020_div_cnt <= leds_2020_div_cnt + 1;
       end if;
-      if ( counter < 16 ) then
-        LEDS_2020 <= '1';
+
+      if ( leds_2020_led_cnt = leds_2020_act_led ) then
+        leds_2020_bit1_flag <= '1';
       else
+        leds_2020_bit1_flag <= '0';
+      end if;
+
+      if ( leds_2020_led_cnt < 12 ) then
+        leds_2020_blank_flag <= '0';
+      else
+        leds_2020_blank_flag <= '1';
+      end if;
+
+      if ( leds_2020_blank_flag = '1' ) then
         LEDS_2020 <= '0';
+      else
+        if ( leds_2020_bit1_flag = '1' ) then
+          if ( leds_2020_div_cnt < 20 ) then
+            LEDS_2020 <= '1';
+          else
+            LEDS_2020 <= '0';
+          end if;
+        else
+          if ( leds_2020_div_cnt < 10 ) then
+            LEDS_2020 <= '1';
+          else
+            LEDS_2020 <= '0';
+          end if;
+        end if;
       end if;
     end if;
   end process leds_2020_proc;
