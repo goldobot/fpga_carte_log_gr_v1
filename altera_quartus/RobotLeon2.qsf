@@ -181,6 +181,12 @@ set_location_assignment PIN_D3 -to QUAD_A_1
 set_location_assignment PIN_C3 -to QUAD_B_1
 
 
+# -----------------------------------
+# Ruban de leds pour phare 2020
+# -----------------------------------
+set_location_assignment PIN_J14 -to LEDS_2020
+
+
 # ----
 # GPIO
 # ----
@@ -259,7 +265,7 @@ set_location_assignment PIN_L13 -to GPIO_129
 set_location_assignment PIN_J16 -to GPIO_130
 set_location_assignment PIN_K15 -to GPIO_131
 set_location_assignment PIN_J13 -to GPIO_132
-set_location_assignment PIN_J14 -to GPIO_133
+#set_location_assignment PIN_J14 -to GPIO_133
 
 # Bank 3 : x 16
 set_location_assignment PIN_E15 -to GPIO_2_IN0

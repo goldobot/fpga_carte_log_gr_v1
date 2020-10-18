@@ -58,6 +58,9 @@ entity RobotLeon2_altera is
     ; QUAD_A_1            : in std_logic
     ; QUAD_B_1            : in std_logic
 
+    -- STEPPER
+    ; LEDS_2020           : out std_logic
+
     -- GPIOs
     ; GPIO_0_IN0          : in std_logic
 --    ; GPIO_000            : in std_logic
@@ -131,7 +134,7 @@ entity RobotLeon2_altera is
     ; GPIO_130            : in std_logic
     ; GPIO_131            : in std_logic
     ; GPIO_132            : in std_logic
-    ; GPIO_133            : in std_logic
+--    ; GPIO_133            : in std_logic
 
     ; GPIO_2_IN0          : in std_logic
     ; GPIO_2_IN1          : in std_logic
@@ -285,6 +288,8 @@ signal i2c_slv_scl_en   : std_logic;
 
 signal core_leds        : std_logic_vector(7 downto 0);
 signal top_leds         : std_logic_vector(7 downto 0);
+
+signal leds_2020_reg    : std_logic_vector(31 downto 0);
 
 signal n_reset_i        : std_logic;
 
@@ -494,6 +499,25 @@ begin
     end if;
   end process leds_proc;
 
+-- LEDS 2020
+  leds_2020_proc : process( n_reset, clk_o )
+    variable counter : integer := 0;
+  begin
+    if ( n_reset = '0' ) then
+      leds_2020_reg <= (others => '0');
+      counter := 0;
+      LEDS_2020 <= '0';
+    elsif rising_edge( clk_o ) then
+      if ( counter = 20 ) then
+        leds_2020_reg <= leds_2020_reg + 1;
+        counter := 0;
+        LEDS_2020 <= not LEDS_2020;
+      else
+        counter := counter + 1;
+      end if;
+    end if;
+  end process leds_2020_proc;
+
 --leds on mainboard
   LED_DEBUG_0 <= core_leds( 0 );
   LED_DEBUG_1 <= core_leds( 1 );
@@ -577,7 +601,7 @@ begin
                     GPIO_130   when (debug_test = X"80000042") else
                     GPIO_131   when (debug_test = X"80000043") else -- FAIL !
                     GPIO_132   when (debug_test = X"80000044") else
-                    GPIO_133   when (debug_test = X"80000045") else
+--                    GPIO_133   when (debug_test = X"80000045") else
                     GPIO_2_IN0 when (debug_test = X"80000046") else
                     GPIO_2_IN1 when (debug_test = X"80000047") else
                     GPIO_2_IN2 when (debug_test = X"80000048") else
