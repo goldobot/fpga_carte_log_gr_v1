@@ -521,7 +521,7 @@ begin
       leds_2020_blank_flag <= '1';
       LEDS_2020  <= '0';
     elsif rising_edge( clk_o ) then
-      if ( leds_2020_mst_cnt = 16000000 ) then
+      if ( leds_2020_mst_cnt = 8000000 ) then
         leds_2020_mst_cnt <= 0;
         if ( leds_2020_act_led = 11 ) then
           leds_2020_act_led <= 0;
@@ -549,7 +549,11 @@ begin
       end if;
 
       if ( leds_2020_led_cnt = leds_2020_act_led ) then
-        leds_2020_bit1_flag <= '1';
+        if ( GPIO_132 = '0' ) then
+          leds_2020_bit1_flag <= '1';
+        else
+          leds_2020_bit1_flag <= '0';
+        end if;
       else
         leds_2020_bit1_flag <= '0';
       end if;
