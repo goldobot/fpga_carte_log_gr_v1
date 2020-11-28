@@ -127,14 +127,22 @@ set_location_assignment PIN_D11 -to PWM_SERVO12
 # ----------------------------
 # PWM & GPIO pompes et moteurs
 # ----------------------------
+set_location_assignment PIN_R11  -to MOT1_PWM
+set_location_assignment PIN_T10  -to MOT1_DIR
+set_location_assignment PIN_R10  -to MOT2_PWM
+set_location_assignment PIN_P11  -to MOT2_DIR
 
 # -------
 # STEPPER
 # -------
 
 # -----------------------------------
-# Odometry : quadrature encoders
+# Quadrature encoders
 # -----------------------------------
+set_location_assignment PIN_N12  -to QEI_M1_B
+set_location_assignment PIN_P9   -to QEI_M1_A
+set_location_assignment PIN_N9   -to QEI_M2_B
+set_location_assignment PIN_N11  -to QEI_M2_A
 
 # ----
 # GPIO
@@ -190,14 +198,14 @@ set_location_assignment PIN_R13 -to GPIO_104
 set_location_assignment PIN_T12 -to GPIO_105
 set_location_assignment PIN_R12 -to GPIO_106
 set_location_assignment PIN_T11 -to GPIO_107
-set_location_assignment PIN_T10 -to GPIO_108
-set_location_assignment PIN_R11 -to GPIO_109
-set_location_assignment PIN_P11 -to GPIO_110
-set_location_assignment PIN_R10 -to GPIO_111
-set_location_assignment PIN_N12 -to GPIO_112
-set_location_assignment PIN_P9  -to GPIO_113
-set_location_assignment PIN_N9  -to GPIO_114
-set_location_assignment PIN_N11 -to GPIO_115
+#set_location_assignment PIN_T10 -to GPIO_108
+#set_location_assignment PIN_R11 -to GPIO_109
+#set_location_assignment PIN_P11 -to GPIO_110
+#set_location_assignment PIN_R10 -to GPIO_111
+#set_location_assignment PIN_N12 -to GPIO_112
+#set_location_assignment PIN_P9  -to GPIO_113
+#set_location_assignment PIN_N9  -to GPIO_114
+#set_location_assignment PIN_N11 -to GPIO_115
 #set_location_assignment PIN_L16 -to GPIO_116
 #set_location_assignment PIN_K16 -to GPIO_117
 set_location_assignment PIN_R16 -to GPIO_118

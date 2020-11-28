@@ -43,8 +43,10 @@ entity RobotLeon2_altera is
 --    ; DIR_POMPE0          : out std_logic
 --    ; PWM_POMPE1          : out std_logic
 --    ; DIR_POMPE1          : out std_logic
---    ; PWM_MOTOR2          : out std_logic
---    ; DIR_MOTOR2          : out std_logic
+    ; MOT1_PWM            : out std_logic
+    ; MOT1_DIR            : out std_logic
+    ; MOT2_PWM            : out std_logic
+    ; MOT2_DIR            : out std_logic
 
     -- STEPPER
 --    ; STP4_PWM            : out std_logic
@@ -54,9 +56,11 @@ entity RobotLeon2_altera is
 --    ; STP_SWITCH0         : in std_logic
 --    ; STP_SWITCH1         : in std_logic
 
-    -- Encodeur tapis roulant
---    ; QUAD_A_1            : in std_logic
---    ; QUAD_B_1            : in std_logic
+    -- Encodeurs QEI
+    ; QEI_M1_A            : in std_logic
+    ; QEI_M1_B            : in std_logic
+    ; QEI_M2_A            : in std_logic
+    ; QEI_M2_B            : in std_logic
 
     -- GPIOs
     ; GPIO_0_IN0          : in std_logic
@@ -104,14 +108,14 @@ entity RobotLeon2_altera is
     ; GPIO_105            : in std_logic
     ; GPIO_106            : in std_logic
     ; GPIO_107            : in std_logic
-    ; GPIO_108            : in std_logic
-    ; GPIO_109            : in std_logic
-    ; GPIO_110            : in std_logic
-    ; GPIO_111            : in std_logic
-    ; GPIO_112            : in std_logic
-    ; GPIO_113            : in std_logic
-    ; GPIO_114            : in std_logic
-    ; GPIO_115            : in std_logic
+--    ; GPIO_108            : in std_logic
+--    ; GPIO_109            : in std_logic
+--    ; GPIO_110            : in std_logic
+--    ; GPIO_111            : in std_logic
+--    ; GPIO_112            : in std_logic
+--    ; GPIO_113            : in std_logic
+--    ; GPIO_114            : in std_logic
+--    ; GPIO_115            : in std_logic
 --    ; GPIO_116            : in std_logic
 --    ; GPIO_117            : in std_logic
     ; GPIO_118            : in std_logic
@@ -383,10 +387,8 @@ begin
 
       -- ROBOT
       -- position encoder
---      , quad_a_1    => QUAD_A_1
---      , quad_b_1    => QUAD_B_1
-      , quad_a_1    => '0'
-      , quad_b_1    => '0'
+      , quad_a_1    => QEI_M1_A
+      , quad_b_1    => QEI_M1_B
 
       -- hcsr04 interfaces
       -- FIXME : TODO
@@ -418,14 +420,12 @@ begin
 --      , dir_pump0    => DIR_POMPE0
 --      , pwm_pump1    => PWM_POMPE1
 --      , dir_pump1    => DIR_POMPE1
---      , pwm_motor2   => PWM_MOTOR2
---      , dir_motor2   => DIR_MOTOR2
       , pwm_pump0    => open
       , dir_pump0    => open
       , pwm_pump1    => open
       , dir_pump1    => open
-      , pwm_motor2   => open
-      , dir_motor2   => open
+      , pwm_motor2   => MOT1_PWM
+      , dir_motor2   => MOT1_DIR
 
       -- STEPPERS
       , stp_0_step   => open
@@ -444,6 +444,10 @@ begin
       -- debug/test
       , debug_test   => debug_test
       );
+
+  -- FIXME : TODO
+  MOT2_PWM <= '0';
+  MOT2_DIR <= '0';
 
   -- GPIO Audran :                           GPIO_2_IN0 & GPIO_2_IN2 &
   --               GPIO_2_IN1 & GPIO_200   & GPIO_210   & GPIO_212   &
@@ -563,14 +567,14 @@ begin
                     GPIO_105   when (debug_test = X"80000029") else
                     GPIO_106   when (debug_test = X"8000002a") else
                     GPIO_107   when (debug_test = X"8000002b") else
-                    GPIO_108   when (debug_test = X"8000002c") else
-                    GPIO_109   when (debug_test = X"8000002d") else
-                    GPIO_110   when (debug_test = X"8000002e") else
-                    GPIO_111   when (debug_test = X"8000002f") else -- FAIL !
-                    GPIO_112   when (debug_test = X"80000030") else
-                    GPIO_113   when (debug_test = X"80000031") else
-                    GPIO_114   when (debug_test = X"80000032") else
-                    GPIO_115   when (debug_test = X"80000033") else
+--                    GPIO_108   when (debug_test = X"8000002c") else
+--                    GPIO_109   when (debug_test = X"8000002d") else
+--                    GPIO_110   when (debug_test = X"8000002e") else
+--                    GPIO_111   when (debug_test = X"8000002f") else -- FAIL !
+--                    GPIO_112   when (debug_test = X"80000030") else
+--                    GPIO_113   when (debug_test = X"80000031") else
+--                    GPIO_114   when (debug_test = X"80000032") else
+--                    GPIO_115   when (debug_test = X"80000033") else
 --                    GPIO_116   when (debug_test = X"80000034") else
 --                    GPIO_117   when (debug_test = X"80000035") else
                     GPIO_118   when (debug_test = X"80000036") else

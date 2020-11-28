@@ -446,6 +446,7 @@ int main () {
             uart_putstring ( "disable asserv" );
             uart_putchar ( 0xa );
             asserv_active=0;
+            robot_reg[0x125] = 0;
           }
         }
 
@@ -553,7 +554,6 @@ int main () {
         asserv_old_err = asserv_err;
       } else {
         asserv_sigma_err = 0;
-        robot_reg[0x125] = 0;
       }
 
 
