@@ -229,6 +229,9 @@ int main () {
     /* ROBOT 2019 */
     /* FIXME : TODO */
     uint32_t asserv_active = 0;
+    uint32_t homing_flag = 0;
+    uint32_t old_homing_flag = 0;
+    int homing_pos = 0;
     int asserv_target=0;
     int asserv_pos=0, asserv_old_err=0;
     int asserv_delta_err=0;
@@ -325,6 +328,12 @@ int main () {
 
     uart_putchar ( 0xa );
     loop_cnt=0;
+
+#if 1 /* FIXME : DEBUG : EXPERIMENTAL */
+    Kp=0x00010000;
+    Ki=0x00000200;
+    Kd=0x00010000;
+#endif
 
     /* robot reset */
     robot_reg[R_ROBOT_RESET] = 1;
@@ -435,6 +444,13 @@ int main () {
           edit_input_buf ();
           asserv_target = convert_input_buf_to_hexint();
           uart_putchar ( 0xa );
+          asserv_target += homing_pos;
+        }
+
+        if (uart_byte=='H') {
+          uart_putstring ( "GO HOME" );
+          uart_putchar ( 0xa );
+          robot_reg[0x125] = 0xffffffc0;
         }
 
         if (uart_byte=='*') {
@@ -452,7 +468,11 @@ int main () {
 
         if (uart_byte=='?') {
           my_val32 = robot_reg[0x81];
-          uart_putstring ( "0x" );
+          uart_putstring ( "pos : 0x" );
+          uart_printhex ( my_val32 );
+          uart_putchar ( 0xa );
+          my_val32 = robot_reg[0x139];
+          uart_putstring ( "gpio: 0x" );
           uart_printhex ( my_val32 );
           uart_putchar ( 0xa );
         }
@@ -546,8 +566,8 @@ int main () {
 #endif
 
         asserv_command = (Kp*asserv_err + Ki*asserv_sigma_err + Kd*asserv_delta_err)>>16;
-        if (asserv_command>511) asserv_command=511;
-        if (asserv_command<-511) asserv_command=-511;
+        if (asserv_command>255) asserv_command=255;
+        if (asserv_command<-255) asserv_command=-255;
 
         robot_reg[0x125] = (unsigned int) asserv_command;
 
@@ -555,6 +575,24 @@ int main () {
       } else {
         asserv_sigma_err = 0;
       }
+
+
+      my_val32 = robot_reg[0x139];
+      homing_flag = ((my_val32&0x00008000)==0)?0:1;
+
+      if ((old_homing_flag==0) && (homing_flag==1))
+      {
+        uart_putchar ( '.' );
+        uart_putchar ( 0xa );
+        asserv_active=0;
+        robot_reg[0x125] = 0;
+        homing_pos = robot_reg[0x81];
+        asserv_target = homing_pos;
+        uart_printhex ( homing_pos );
+        uart_putchar ( 0xa );
+      }
+
+      old_homing_flag = homing_flag;
 
 
       robot_timer_val = robot_reg[R_ROBOT_TIMER];
