@@ -35,6 +35,7 @@ ROMFILES+=uart/uart.o
 
 ROMFILES+=boot/trap.o
 ROMFILES+=main.o
+ROMFILES+=asserv.o
 
 #all: rom.ld rom.srec roms flash
 all: rom.ld rom.srec roms patch_vhdl

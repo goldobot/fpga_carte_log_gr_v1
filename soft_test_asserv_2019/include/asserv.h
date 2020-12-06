@@ -1,25 +1,27 @@
 #ifndef _ASSERV_H_
 #define _ASSERV_H_
 
-#ifndef uint32_t
-typedef unsigned int uint32_t;
-#endif
-#ifndef uint16_t
-typedef unsigned short int uint16_t;
-#endif
-#ifndef uint8_t
-typedef unsigned char uint8_t;
-#endif
+#include "types.h"
 
 #define GA_ACTIVE_MASK        0x00000001
 #define GA_AT_HOME_MASK       0x00000002
 #define GA_AT_HOME_PREV_MASK  0x00000004
+#define GA_HOMING_ACTION_MASK 0x00000008
+
+#define GA_ENABLE(_ga) do {_ga->flags =_ga->flags|GA_ACTIVE_MASK;} while (0)
+#define GA_DISABLE(_ga) do {_ga->flags =_ga->flags&(~GA_ACTIVE_MASK);} while (0)
+#define GA_ENABLED(_ga) (_ga->flags&GA_ACTIVE_MASK)
+
 
 typedef struct _goldo_asserv {
   uint32_t flags;
-  int homing_pos;
-  int asserv_target;
-  int asserv_pos;
+  int homing_abs_pos;
+  int limit_abs_pos;
+  int max_range;
+  int pwm_clamp;
+  int asserv_abs_target;
+  int asserv_abs_pos;
+  int asserv_speed_est;
   int asserv_old_err;
   int asserv_delta_err;
   int asserv_err;
@@ -35,11 +37,17 @@ typedef struct _goldo_asserv {
 } goldo_asserv_t;
 
 void init_asserv (struct _goldo_asserv *_ga, uint32_t _mot_reg, uint32_t _enc_reg, uint32_t _sw_reg, uint32_t _sw_mask);
-inline void set_Kp (struct _goldo_asserv *_ga, int _new_Kp) {_ga->Kp=_new_Kp;}
-inline void set_Ki (struct _goldo_asserv *_ga, int _new_Ki) {_ga->Ki=_new_Ki;}
-inline void set_Kd (struct _goldo_asserv *_ga, int _new_Kd) {_ga->Kd=_new_Kd;}
+void set_Kp (struct _goldo_asserv *_ga, int _new_Kp);
+void set_Ki (struct _goldo_asserv *_ga, int _new_Ki);
+void set_Kd (struct _goldo_asserv *_ga, int _new_Kd);
 void enable_asserv (struct _goldo_asserv *_ga, int _enabled);
+int asserv_is_enabled (struct _goldo_asserv *_ga);
+int get_abs_pos (struct _goldo_asserv *_ga);
+int get_rel_pos (struct _goldo_asserv *_ga);
 void do_step_asserv (struct _goldo_asserv *_ga);
 int do_test_asserv (struct _goldo_asserv *_ga, int _Ip, int _Ii, int _Id);
+void jump_to_rel_target (struct _goldo_asserv *_ga, int _target);
+void go_to_rel_target (struct _goldo_asserv *_ga, int _target);
+void start_homing (struct _goldo_asserv *_ga);
 
 #endif /* ASSERV_H_ */

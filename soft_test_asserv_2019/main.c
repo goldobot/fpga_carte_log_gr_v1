@@ -7,6 +7,8 @@
 
 #include "robot_leon.h"
 
+#include "asserv.h"
+
 /* FIXME : DEBUG : ne pas supprimer! */
 unsigned int big_bad_buf[4] = {0};
 
@@ -210,6 +212,9 @@ void edit_input_buf ()
 
 #define ROBOT_SAMPLING_INT  10000 /* in microseconds */
 
+struct _goldo_asserv ga_left;
+struct _goldo_asserv ga_right;
+
 int main () {
     struct lregs *hw = ( struct lregs * )( PREGS );
     volatile int* leds_reg = ( volatile int* ) LEDS_BASE_ADDR;
@@ -220,76 +225,64 @@ int main () {
     uint32_t robot_timer_val=0;
     uint32_t robot_timer_val_ms=0;
     uint32_t robot_sync_barrier=0;
-    int pwd_state;
 
     uint32_t my_val32;
     uint32_t mem_test_addr;
     uint32_t mem_test_data;
 
-    /* ROBOT 2019 */
-    /* FIXME : TODO */
-    uint32_t asserv_active = 0;
-    uint32_t homing_flag = 0;
-    uint32_t old_homing_flag = 0;
-    int homing_pos = 0;
-    int asserv_target=0;
-    int asserv_pos=0, asserv_old_err=0;
-    int asserv_delta_err=0;
-    int asserv_err=0;
-    int asserv_sigma_err=0;
-    int asserv_command=0;
-    int Kp=0, Ki=0, Kd=0;
-    int test_Ip=0, test_Ii=0, test_Id=0;
-    int test_O=0;
-
+    int monitoring_flag = 0;
+    int monitoring_cnt = 0;
 
     i2c_test_data = 0;
 
     uart_init ( B115200 );
 
 #if 0 /* FIXME : DEBUG */
-    leds = 0xaa;
-    pwd_state = 0;
-    for (;;) {
-      asm ( "nop" );
-      *leds_reg = leds & 0xff;
-      asm ( "nop" );
+    {
+      int pwd_state;
+      leds = 0xaa;
+      pwd_state = 0;
+      for (;;) {
+        asm ( "nop" );
+        *leds_reg = leds & 0xff;
+        asm ( "nop" );
 
-      sleep ( 100 );
+        sleep ( 100 );
 
-      asm ( "nop" );
-      leds ^= mask;
-      asm ( "nop" );
+        asm ( "nop" );
+        leds ^= mask;
+        asm ( "nop" );
 
-      unsigned int my_uartstatus1 = hw->uartstatus1;
-      if ( my_uartstatus1 & UART_STATUS_DR ) {
-        unsigned int my_uartdata1 = hw->uartdata1;
-        uart_byte = my_uartdata1;
-        switch (pwd_state) {
-        case 0:
-          if (uart_byte=='g') pwd_state = 1; else pwd_state = 0;
-          break;
-        case 1:
-          if (uart_byte=='o') pwd_state = 2; else pwd_state = 0;
-          break;
-        case 2:
-          if (uart_byte=='l') pwd_state = 3; else pwd_state = 0;
-          break;
-        case 3:
-          if (uart_byte=='d') pwd_state = 4; else pwd_state = 0;
-          break;
-        case 4:
-          if (uart_byte=='o') pwd_state = 5; else pwd_state = 0;
-          break;
+        unsigned int my_uartstatus1 = hw->uartstatus1;
+        if ( my_uartstatus1 & UART_STATUS_DR ) {
+          unsigned int my_uartdata1 = hw->uartdata1;
+          uart_byte = my_uartdata1;
+          switch (pwd_state) {
+          case 0:
+            if (uart_byte=='g') pwd_state = 1; else pwd_state = 0;
+            break;
+          case 1:
+            if (uart_byte=='o') pwd_state = 2; else pwd_state = 0;
+            break;
+          case 2:
+            if (uart_byte=='l') pwd_state = 3; else pwd_state = 0;
+            break;
+          case 3:
+            if (uart_byte=='d') pwd_state = 4; else pwd_state = 0;
+            break;
+          case 4:
+            if (uart_byte=='o') pwd_state = 5; else pwd_state = 0;
+            break;
+          }
         }
-      }
 
-      if (pwd_state == 5) break;
+        if (pwd_state == 5) break;
+      }
     }
 #endif
 
     uart_putchar ( 0xa );
-    uart_putstring ( "Robot GOLDO - soft test asserv 2019" );
+    uart_putstring ( "Robot GOLDO - soft test asserv 2020" );
     uart_putchar ( 0xa );
     uart_putstring ( "Fonctions OK :" );
     uart_putchar ( 0xa );
@@ -317,6 +310,10 @@ int main () {
     uart_putchar ( 0xa );
     uart_putstring ( "   C : entrer valeur consigne" );
     uart_putchar ( 0xa );
+    uart_putstring ( "   H : homing" );
+    uart_putchar ( 0xa );
+    uart_putstring ( "   M : activer/desactiver monitoring" );
+    uart_putchar ( 0xa );
     uart_putstring ( "   * : activer/desactiver asserv" );
     uart_putchar ( 0xa );
     uart_putstring ( "   ? : position courante encodeur" );
@@ -329,15 +326,16 @@ int main () {
     uart_putchar ( 0xa );
     loop_cnt=0;
 
-#if 1 /* FIXME : DEBUG : EXPERIMENTAL */
-    Kp=0x00010000;
-    Ki=0x00000200;
-    Kd=0x00010000;
-#endif
-
     /* robot reset */
     robot_reg[R_ROBOT_RESET] = 1;
     robot_reg[R_ROBOT_RESET] = 0;
+
+    init_asserv (&ga_left, 
+                 /* _mot_reg */ 0x125, 
+                 /* _enc_reg */ 0x81, 
+                 /* _sw_reg  */ 0x139, 
+                 /* _sw_mask */ 0x00008000);
+    /* FIXME : TODO : right side */
 
     for (;;) {
       robot_timer_val = robot_reg[R_ROBOT_TIMER];
@@ -417,67 +415,108 @@ int main () {
           uart_putchar ( 0xa );
         }
 
+        if ((uart_byte=='!')) { /* load new soft */
+          uart_putchar ( '!' );
+          uart_putchar ( 0xa );
+          asm ( "call 0x10000000" ); /* call load_bitstream */
+        }
+
+        if ((uart_byte=='%')) { /* robot reset */
+          uart_putstring ( "RESET" );
+          uart_putchar ( 0xa );
+          robot_reg[R_ROBOT_RESET] = 1;
+          robot_reg[R_ROBOT_RESET] = 0;
+
+          /* ROBOT 2020 */
+          init_asserv (&ga_left, 
+                       /* _mot_reg */ 0x125, 
+                       /* _enc_reg */ 0x81, 
+                       /* _sw_reg  */ 0x139, 
+                       /* _sw_mask */ 0x00008000);
+          /* FIXME : TODO : right side */
+
+          robot_timer_val = robot_reg[R_ROBOT_TIMER];
+          robot_sync_barrier = robot_timer_val + ROBOT_SAMPLING_INT;
+        }
+
+
+        /*******************/
+        /*** ASSERV 2020 ***/
+        /*******************/
 
         if (uart_byte=='P') {
           uart_putstring ( "Kp : " );
           edit_input_buf ();
-          Kp = convert_input_buf_to_hexint();
+          ga_left.Kp = convert_input_buf_to_hexint();
           uart_putchar ( 0xa );
         }
 
         if (uart_byte=='I') {
           uart_putstring ( "Ki : " );
           edit_input_buf ();
-          Ki = convert_input_buf_to_hexint();
+          ga_left.Ki = convert_input_buf_to_hexint();
           uart_putchar ( 0xa );
         }
 
         if (uart_byte=='D') {
           uart_putstring ( "Kd : " );
           edit_input_buf ();
-          Kd = convert_input_buf_to_hexint();
+          ga_left.Kd = convert_input_buf_to_hexint();
           uart_putchar ( 0xa );
         }
 
         if (uart_byte=='C') {
+          int asserv_target;
           uart_putstring ( "C : " );
           edit_input_buf ();
           asserv_target = convert_input_buf_to_hexint();
           uart_putchar ( 0xa );
-          asserv_target += homing_pos;
+          jump_to_rel_target (&ga_left, asserv_target);
         }
 
         if (uart_byte=='H') {
           uart_putstring ( "GO HOME" );
           uart_putchar ( 0xa );
-          robot_reg[0x125] = 0xffffffc0;
+          start_homing (&ga_left);
         }
 
         if (uart_byte=='*') {
-          if (asserv_active==0) {
+          if (!asserv_is_enabled(&ga_left)) {
             uart_putstring ( "enable asserv" );
             uart_putchar ( 0xa );
-            asserv_active=1;
+            enable_asserv (&ga_left, 1);
+            /* FIXME : TODO : right side */
           } else {
             uart_putstring ( "disable asserv" );
             uart_putchar ( 0xa );
-            asserv_active=0;
-            robot_reg[0x125] = 0;
+            enable_asserv (&ga_left, 0);
+            /* FIXME : TODO : right side */
           }
         }
 
         if (uart_byte=='?') {
-          my_val32 = robot_reg[0x81];
-          uart_putstring ( "pos : 0x" );
+          my_val32 = ga_left.asserv_abs_target;
+          uart_putstring ( "target : " );
+          uart_printint ( my_val32 );
+          uart_putchar ( 0xa );
+          my_val32 = get_abs_pos (&ga_left);
+          uart_putstring ( "pos : " );
+          uart_printint ( my_val32 );
+          uart_putchar ( 0xa );
+          my_val32 = robot_reg[ga_left.sw_reg];
+          uart_putstring ( "gpio: 0x" );
           uart_printhex ( my_val32 );
           uart_putchar ( 0xa );
-          my_val32 = robot_reg[0x139];
-          uart_putstring ( "gpio: 0x" );
+          my_val32 = ga_left.flags;
+          uart_putstring ( "flags: 0x" );
           uart_printhex ( my_val32 );
           uart_putchar ( 0xa );
         }
 
         if (uart_byte=='T') {
+          int test_Ip=0, test_Ii=0, test_Id=0;
+          int test_O=0;
+
           uart_putchar ( 0xa );
           uart_putstring ( "TEST" );
           uart_putchar ( 0xa );
@@ -498,102 +537,44 @@ int main () {
           uart_putchar ( 0xa );
 
           uart_putchar ( 0xa );
-          test_O = (test_Ip*Kp + test_Ii*Ki + test_Id*Kd)>>16;
+          test_O = do_test_asserv (&ga_left, test_Ip, test_Ii, test_Id);
           uart_putstring ( " OUT = 0x" );
           uart_printhex ( (unsigned int)test_O );
           uart_putchar ( 0xa );
         }
 
-
-        if (uart_byte=='+') {
-          mem_test_addr = 0x80008008;
-          my_val32 = read_test_32b((uint32_t *) mem_test_addr);
-          my_val32++;
-          write_test_32b((uint32_t *) mem_test_addr, my_val32);
-          uart_putstring ( "0x" );
-          uart_printhex ( my_val32 );
-          uart_putchar ( 0xa );
+        if (uart_byte=='M') {
+          if (monitoring_flag==0) {
+            uart_putstring ( "enable monitoring" );
+            uart_putchar ( 0xa );
+            monitoring_flag = 1;
+            monitoring_cnt = 100;
+          } else {
+            uart_putstring ( "disable monitoring" );
+            uart_putchar ( 0xa );
+            monitoring_flag = 0;
+            monitoring_cnt = 0;
+          }
         }
 
-        if (uart_byte=='-') {
-          mem_test_addr = 0x80008008;
-          my_val32 = read_test_32b((uint32_t *) mem_test_addr);
-          my_val32--;
-          write_test_32b((uint32_t *) mem_test_addr, my_val32);
-          uart_putstring ( "0x" );
-          uart_printhex ( my_val32 );
-          uart_putchar ( 0xa );
-        }
-
-        if ((uart_byte=='!')) { /* load new soft */
-          uart_putchar ( '!' );
-          uart_putchar ( 0xa );
-          asm ( "call 0x10000000" ); /* call load_bitstream */
-        }
-
-        if ((uart_byte=='%')) { /* robot reset */
-          uart_putstring ( "RESET" );
-          uart_putchar ( 0xa );
-          robot_reg[R_ROBOT_RESET] = 1;
-          robot_reg[R_ROBOT_RESET] = 0;
-
-          /* ROBOT 2019 */
-          /* FIXME : TODO */
-
-          robot_timer_val = robot_reg[R_ROBOT_TIMER];
-          robot_sync_barrier = robot_timer_val + ROBOT_SAMPLING_INT;
-        }
       }
 
+      do_step_asserv (&ga_left);
+      /* FIXME : TODO : right side */
 
-      /* FIXME : TODO */
-      if (asserv_active != 0) {
-        asserv_pos = robot_reg[0x81];
-
-        asserv_err = asserv_target - asserv_pos;
-
-        asserv_delta_err = asserv_err - asserv_old_err;
-
-        asserv_sigma_err += asserv_err;
-        if (asserv_sigma_err>16383) asserv_sigma_err=16383;
-        if (asserv_sigma_err<-16383) asserv_sigma_err=-16383;
-
-#if 0 /* FIXME : DEBUG : EXPERIMENTAL */
-        if (asserv_sigma_err>10) asserv_sigma_err-=9;
-        if (asserv_sigma_err>1) asserv_sigma_err-=1;
-        if (asserv_sigma_err<10) asserv_sigma_err+=9;
-        if (asserv_sigma_err<1) asserv_sigma_err+=1;
-#endif
-
-        asserv_command = (Kp*asserv_err + Ki*asserv_sigma_err + Kd*asserv_delta_err)>>16;
-        if (asserv_command>255) asserv_command=255;
-        if (asserv_command<-255) asserv_command=-255;
-
-        robot_reg[0x125] = (unsigned int) asserv_command;
-
-        asserv_old_err = asserv_err;
-      } else {
-        asserv_sigma_err = 0;
-      }
-
-
-      my_val32 = robot_reg[0x139];
-      homing_flag = ((my_val32&0x00008000)==0)?0:1;
-
-      if ((old_homing_flag==0) && (homing_flag==1))
+      if (monitoring_flag==1)
       {
-        uart_putchar ( '.' );
-        uart_putchar ( 0xa );
-        asserv_active=0;
-        robot_reg[0x125] = 0;
-        homing_pos = robot_reg[0x81];
-        asserv_target = homing_pos;
-        uart_printhex ( homing_pos );
-        uart_putchar ( 0xa );
+        if (monitoring_cnt>0)
+        {
+          monitoring_cnt--;
+        }
+        else
+        {
+          uart_printint ( ga_left.asserv_speed_est );
+          uart_putchar ( 0xa );
+          monitoring_cnt = 100;
+        }
       }
-
-      old_homing_flag = homing_flag;
-
 
       robot_timer_val = robot_reg[R_ROBOT_TIMER];
       robot_timer_val_ms = robot_timer_val/1000;
