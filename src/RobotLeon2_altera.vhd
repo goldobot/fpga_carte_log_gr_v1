@@ -217,6 +217,8 @@ component core
     -- position encoder
     quad_a_1            : in std_logic;
     quad_b_1            : in std_logic;
+    quad_a_2            : in std_logic;
+    quad_b_2            : in std_logic;
 
     -- hcsr04 interfaces
     us1_trig            : out std_logic;
@@ -245,6 +247,8 @@ component core
     dir_pump1           : out std_logic;
     pwm_motor2          : out std_logic;
     dir_motor2          : out std_logic;
+    pwm_motor3          : out std_logic;
+    dir_motor3          : out std_logic;
     stp_0_step          : out std_logic;
     stp_0_dir           : out std_logic;
     stp_1_step          : out std_logic;
@@ -389,6 +393,8 @@ begin
       -- position encoder
       , quad_a_1    => QEI_M1_A
       , quad_b_1    => QEI_M1_B
+      , quad_a_2    => QEI_M2_A
+      , quad_b_2    => QEI_M2_B
 
       -- hcsr04 interfaces
       -- FIXME : TODO
@@ -426,6 +432,8 @@ begin
       , dir_pump1    => open
       , pwm_motor2   => MOT1_PWM
       , dir_motor2   => MOT1_DIR
+      , pwm_motor3   => MOT2_PWM
+      , dir_motor3   => MOT2_DIR
 
       -- STEPPERS
       , stp_0_step   => open
@@ -444,10 +452,6 @@ begin
       -- debug/test
       , debug_test   => debug_test
       );
-
-  -- FIXME : TODO
-  MOT2_PWM <= '0';
-  MOT2_DIR <= '0';
 
   -- GPIO Audran :                           GPIO_2_IN0 & GPIO_2_IN2 &
   --               GPIO_2_IN1 & GPIO_200   & GPIO_210   & GPIO_212   &

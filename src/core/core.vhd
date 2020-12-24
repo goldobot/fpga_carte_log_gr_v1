@@ -55,6 +55,8 @@ entity core is
     -- odometric encoder interface
     quad_a_1    : in std_logic;
     quad_b_1    : in std_logic;
+    quad_a_2    : in std_logic;
+    quad_b_2    : in std_logic;
 
     -- hcsr04 interfaces
     us1_trig            : out std_logic;
@@ -84,6 +86,8 @@ entity core is
     dir_pump1           : out std_logic;
     pwm_motor2          : out std_logic;
     dir_motor2          : out std_logic;
+    pwm_motor3          : out std_logic;
+    dir_motor3          : out std_logic;
 
     stp_0_step          : out std_logic;
     stp_0_dir           : out std_logic;
@@ -183,6 +187,8 @@ architecture rtl of core is
       -- odometric encoder interface
       ; quad_a_1            : in std_logic
       ; quad_b_1            : in std_logic
+      ; quad_a_2            : in std_logic
+      ; quad_b_2            : in std_logic
       -- hcsr04 interfaces
       ; us1_trig            : out std_logic
       ; us1_echo            : in std_logic
@@ -209,6 +215,8 @@ architecture rtl of core is
       ; dir_pump1           : out std_logic
       ; pwm_motor2          : out std_logic
       ; dir_motor2          : out std_logic
+      ; pwm_motor3          : out std_logic
+      ; dir_motor3          : out std_logic
       ; stp_0_step          : out std_logic
       ; stp_0_dir           : out std_logic
       ; stp_1_step          : out std_logic
@@ -483,6 +491,8 @@ begin
       -- odometric encoder interface
       quad_a_1            => quad_a_1,
       quad_b_1            => quad_b_1,
+      quad_a_2            => quad_a_2,
+      quad_b_2            => quad_b_2,
       -- hcsr04 interfaces
       us1_trig            => us1_trig,
       us1_echo            => us1_echo,
@@ -509,6 +519,8 @@ begin
       dir_pump1           => dir_pump1,
       pwm_motor2          => pwm_motor2,
       dir_motor2          => dir_motor2,
+      pwm_motor3          => pwm_motor3,
+      dir_motor3          => dir_motor3,
       stp_0_step          => stp_0_step,
       stp_0_dir           => stp_0_dir,
       stp_1_step          => stp_1_step,

@@ -27,6 +27,8 @@ entity robot_apb is
     -- odometry encoder interface
     ; quad_a_1            : in std_logic
     ; quad_b_1            : in std_logic
+    ; quad_a_2            : in std_logic
+    ; quad_b_2            : in std_logic
     -- hcsr04 interfaces
     ; us1_trig            : out std_logic
     ; us1_echo            : in std_logic
@@ -53,6 +55,8 @@ entity robot_apb is
     ; dir_pump1           : out std_logic
     ; pwm_motor2          : out std_logic
     ; dir_motor2          : out std_logic
+    ; pwm_motor3          : out std_logic
+    ; dir_motor3          : out std_logic
     ; stp_0_step          : out std_logic
     ; stp_0_dir           : out std_logic
     ; stp_1_step          : out std_logic
@@ -233,6 +237,9 @@ end component;
   signal iODO_1_INC           : std_logic_vector (15 downto 0);
   signal iODO_1_POS           : std_logic_vector (31 downto 0);
   signal iODO_1_SPEED         : std_logic_vector (31 downto 0);
+  signal iODO_2_INC           : std_logic_vector (15 downto 0);
+  signal iODO_2_POS           : std_logic_vector (31 downto 0);
+  signal iODO_2_SPEED         : std_logic_vector (31 downto 0);
 
   signal iUS1_ACTUAL_DIST     : std_logic_vector (31 downto 0);
   signal iUS2_ACTUAL_DIST     : std_logic_vector (31 downto 0);
@@ -269,6 +276,8 @@ end component;
   signal iPUMP1_PW            : std_logic_vector (31 downto 0);
   signal iMOTOR2_PWM_PERIOD   : std_logic_vector (31 downto 0);
   signal iMOTOR2_PW           : std_logic_vector (31 downto 0);
+  signal iMOTOR3_PWM_PERIOD   : std_logic_vector (31 downto 0);
+  signal iMOTOR3_PW           : std_logic_vector (31 downto 0);
 
   signal iSTP_POL_0_CTRL      : std_logic_vector (15 downto 0);
   signal iSTP_POL_0_PERIOD    : std_logic_vector (15 downto 0);
@@ -288,10 +297,20 @@ end component;
   signal iSTP_POL_1_STEP      : std_logic;
   signal iSTP_POL_1_DIR       : std_logic;
 
-  signal iROBOT2018_BAL0      : std_logic_vector (31 downto 0);
-  signal iROBOT2018_BAL1      : std_logic_vector (31 downto 0);
-  signal iROBOT2018_BAL2      : std_logic_vector (31 downto 0);
-  signal iROBOT2018_BAL3      : std_logic_vector (31 downto 0);
+  signal iROBOT_BAL0          : std_logic_vector (31 downto 0);
+  signal iROBOT_BAL1          : std_logic_vector (31 downto 0);
+  signal iROBOT_BAL2          : std_logic_vector (31 downto 0);
+  signal iROBOT_BAL3          : std_logic_vector (31 downto 0);
+
+  signal iROBOT_BAL4          : std_logic_vector (31 downto 0);
+  signal iROBOT_BAL5          : std_logic_vector (31 downto 0);
+  signal iROBOT_BAL6          : std_logic_vector (31 downto 0);
+  signal iROBOT_BAL7          : std_logic_vector (31 downto 0);
+
+  signal iROBOT_BAL8          : std_logic_vector (31 downto 0);
+  signal iROBOT_BAL9          : std_logic_vector (31 downto 0);
+  signal iROBOT_BAL10         : std_logic_vector (31 downto 0);
+  signal iROBOT_BAL11         : std_logic_vector (31 downto 0);
 
   signal iI2C_MASTER_RD       : std_logic;
   signal iI2C_MASTER_WR       : std_logic;
@@ -377,6 +396,34 @@ begin
       AsyncReset => iODO_ASYNC_RESET,
       CounterValue => iODO_1_POS,
       SpeedValue => iODO_1_SPEED,
+      SetAux1 => '0',
+      SetValueAux1 => (others => '0'),
+      CounterValueAux1 => open,
+      SpeedValueAux1 => open,
+
+      IncrementAuxTh => (others => '0'),
+      SetAuxTh => '0',
+      SetValueAuxTh => (others => '0'),
+      CounterValueAuxTh => open,
+      SpeedValueAuxTh => open,
+      IncrementAuxR => (others => '0'),
+      SetAuxR => '0',
+      SetValueAuxR => (others => '0'),
+      CounterValueAuxR => open,
+      SpeedValueAuxR => open
+    );
+
+  c_quad_2 : QuadratureCounterPorts
+    port map (
+      RESET => iRESET,
+      clock => pclk,
+      QuadA => quad_a_2,
+      QuadB => quad_b_2,
+      Increment_4_12 => iODO_2_INC,
+      SamplingInterval => iODO_SAMPLING_INT,
+      AsyncReset => iODO_ASYNC_RESET,
+      CounterValue => iODO_2_POS,
+      SpeedValue => iODO_2_SPEED,
       SetAux1 => '0',
       SetValueAux1 => (others => '0'),
       CounterValueAux1 => open,
@@ -532,6 +579,16 @@ begin
       DIR_PUMP => dir_motor2
     );
 
+  c_motor3 : PUMP
+    port map (
+      RESET => iRESET,
+      CLK => pclk,
+      PWM_PUMP_PERIOD => iMOTOR3_PWM_PERIOD,
+      PWM_PUMP_PW => iMOTOR3_PW,
+      PWM_PUMP => pwm_motor3,
+      DIR_PUMP => dir_motor3
+    );
+
   c_stepper_pololu0 : STEPPER_POLOLU
     port map (
       RESET => iRESET,
@@ -678,6 +735,7 @@ begin
 
       iODO_SAMPLING_INT  <= X"000F423F"; -- 40 ms avec pclk=25MHz
       iODO_1_INC         <= X"1000";
+      iODO_2_INC         <= X"1000";
 
       iSERVO0_PWM_PERIOD <= X"00040000";
       iSERVO0_PW         <= (others => '0');
@@ -710,6 +768,8 @@ begin
       iPUMP1_PW          <= (others => '0');
       iMOTOR2_PWM_PERIOD <= X"00000200";
       iMOTOR2_PW         <= (others => '0');
+      iMOTOR3_PWM_PERIOD <= X"00000200";
+      iMOTOR3_PW         <= (others => '0');
 
       iTRACE_FIFO        <= (others => '0');
       iTRACE_FIFO_WR     <= '0';
@@ -724,10 +784,20 @@ begin
       iSTP_POL_1_TARGET_POS  <= X"FFFF";
       iSTP_POL_1_SET_CUR_POS <= X"FFFF";
 
-      iROBOT2018_BAL0     <= X"00000000";
-      iROBOT2018_BAL1     <= X"00000000";
-      iROBOT2018_BAL2     <= X"00000000";
-      iROBOT2018_BAL3     <= X"00000000";
+      iROBOT_BAL0         <= X"00000000";
+      iROBOT_BAL1         <= X"00000000";
+      iROBOT_BAL2         <= X"00000000";
+      iROBOT_BAL3         <= X"00000000";
+
+      iROBOT_BAL4         <= X"00000000";
+      iROBOT_BAL5         <= X"00000000";
+      iROBOT_BAL6         <= X"00000000";
+      iROBOT_BAL7         <= X"00000000";
+
+      iROBOT_BAL8         <= X"00000000";
+      iROBOT_BAL9         <= X"00000000";
+      iROBOT_BAL10        <= X"00000000";
+      iROBOT_BAL11        <= X"00000000";
 
 -- FIXME : DEBUG ++
       iSPI_DBG_SLV_DATA  <= (others => '0');
@@ -793,11 +863,11 @@ begin
           when "0010001001" => -- 0x80008224 -- robot_reg[0x89]
             null; -- <available>
           when "0010001011" => -- 0x8000822c -- robot_reg[0x8b]
-            null; -- <available>
+            iODO_2_INC <= iMST_WDATA(15 downto 0);
           when "0010001100" => -- 0x80008230 -- robot_reg[0x8c]
             null; -- <available>
           when "0010001111" => -- 0x8000823c -- robot_reg[0x8f]
-            null; -- <available>
+            iODO_SAMPLING_INT <= iMST_WDATA; -- BZZ!! BZZ!!
 
           -- was "advanced" odometry in 2016
           when "0010010001" => -- 0x80008244 -- robot_reg[0x91]
@@ -927,7 +997,7 @@ begin
           when "0011011111" => -- 0x8000837c -- robot_reg[0xdf]
             null; -- <available>
 
-          -- SERVO PETIT ROBOT 2018
+          -- SERVO 
           when "0100000000" => -- 0x80008400 -- robot_reg[0x100]
             iSERVO0_PWM_PERIOD <= iMST_WDATA;
           when "0100000001" => -- 0x80008404 -- robot_reg[0x101]
@@ -993,7 +1063,7 @@ begin
           when "0100011111" => -- 0x8000847c -- robot_reg[0x11f]
             null; -- <available>
 
-          -- MOTEURS CC PETIT ROBOT 2018
+          -- MOTEURS CC 
           when "0100100000" => -- 0x80008480 -- robot_reg[0x120]
             iPUMP0_PWM_PERIOD <= iMST_WDATA;
           when "0100100001" => -- 0x80008484 -- robot_reg[0x121]
@@ -1007,9 +1077,9 @@ begin
           when "0100100101" => -- 0x80008494 -- robot_reg[0x125]
             iMOTOR2_PW         <= iMST_WDATA;
           when "0100100110" => -- 0x80008498 -- robot_reg[0x126]
-            null; -- <available>
+            iMOTOR3_PWM_PERIOD <= iMST_WDATA;
           when "0100100111" => -- 0x8000849c -- robot_reg[0x127]
-            null; -- <available>
+            iMOTOR3_PW         <= iMST_WDATA;
           when "0100101000" => -- 0x800084a0 -- robot_reg[0x128]
             null; -- <available>
           when "0100101001" => -- 0x800084a4 -- robot_reg[0x129]
@@ -1027,7 +1097,7 @@ begin
           when "0100101111" => -- 0x800084bc -- robot_reg[0x12f]
             null; -- <available>
 
-          -- MOTEURS STEPPER PETIT ROBOT 2018
+          -- MOTEURS STEPPER 
           when "0100110000" => -- 0x800084c0 -- robot_reg[0x130]
             iSTP_POL_0_PERIOD   <= iMST_WDATA(31 downto 16);
             iSTP_POL_0_CTRL     <= iMST_WDATA(15 downto 0);
@@ -1049,7 +1119,7 @@ begin
           when "0100110111" => -- 0x800084dc -- robot_reg[0x137]
             null; -- <available>
 
-          -- BAL & capteurs PETIT ROBOT 2018
+          -- BAL & capteurs 
           when "0100111000" => -- 0x800084e0 -- robot_reg[0x138]
             null; -- RO : stp_switch1 & stp_switch0;
           when "0100111001" => -- 0x800084e4 -- robot_reg[0x139]
@@ -1059,13 +1129,31 @@ begin
           when "0100111011" => -- 0x800084ec -- robot_reg[0x13b]
             null; -- <available>
           when "0100111100" => -- 0x800084f0 -- robot_reg[0x13c]
-            iROBOT2018_BAL0 <= iMST_WDATA;
+            iROBOT_BAL0 <= iMST_WDATA;
           when "0100111101" => -- 0x800084f4 -- robot_reg[0x13d]
-            iROBOT2018_BAL1 <= iMST_WDATA;
+            iROBOT_BAL1 <= iMST_WDATA;
           when "0100111110" => -- 0x800084f8 -- robot_reg[0x13e]
-            iROBOT2018_BAL2 <= iMST_WDATA;
+            iROBOT_BAL2 <= iMST_WDATA;
           when "0100111111" => -- 0x800084fc -- robot_reg[0x13f]
-            iROBOT2018_BAL3 <= iMST_WDATA;
+            iROBOT_BAL3 <= iMST_WDATA;
+
+          when "0101000000" => -- 0x80008500 -- robot_reg[0x140]
+            iROBOT_BAL4 <= iMST_WDATA;
+          when "0101000001" => -- 0x80008504 -- robot_reg[0x141]
+            iROBOT_BAL5 <= iMST_WDATA;
+          when "0101000010" => -- 0x80008508 -- robot_reg[0x142]
+            iROBOT_BAL6 <= iMST_WDATA;
+          when "0101000011" => -- 0x8000850c -- robot_reg[0x143]
+            iROBOT_BAL7 <= iMST_WDATA;
+
+          when "0101000100" => -- 0x80008510 -- robot_reg[0x144]
+            iROBOT_BAL8 <= iMST_WDATA;
+          when "0101000101" => -- 0x80008514 -- robot_reg[0x145]
+            iROBOT_BAL9 <= iMST_WDATA;
+          when "0101000110" => -- 0x80008518 -- robot_reg[0x146]
+            iROBOT_BAL10 <= iMST_WDATA;
+          when "0101000111" => -- 0x8000851c -- robot_reg[0x147]
+            iROBOT_BAL11 <= iMST_WDATA;
 
           when others =>
         end case;
@@ -1150,13 +1238,13 @@ begin
         when "0010000111" => -- 0x8000821c -- robot_reg[0x87]
           iMST_RDATA <= iODO_SAMPLING_INT;
         when "0010001001" => -- 0x80008224 -- robot_reg[0x89]
-          iMST_RDATA <= (others => '0');
+          iMST_RDATA <= iODO_2_POS;
         when "0010001011" => -- 0x8000822c -- robot_reg[0x8b]
-          iMST_RDATA <= (others => '0');
+          iMST_RDATA <= X"0000" & iODO_2_INC;
         when "0010001100" => -- 0x80008230 -- robot_reg[0x8c]
-          iMST_RDATA <= (others => '0');
+          iMST_RDATA <= iODO_2_SPEED;
         when "0010001111" => -- 0x8000823c -- robot_reg[0x8f]
-          iMST_RDATA <= (others => '0');
+          iMST_RDATA <= iODO_SAMPLING_INT;
 
         -- was "advanced" odometry in 2016
         when "0010010001" => -- 0x80008244 -- robot_reg[0x91]
@@ -1302,7 +1390,7 @@ begin
         when "0011011111" => -- 0x8000837c -- robot_reg[0xdf]
           iMST_RDATA <= (others => '0');
 
-        -- SERVO PETIT ROBOT 2018
+        -- SERVO 
         when "0100000000" => -- 0x80008400 -- robot_reg[0x100]
           iMST_RDATA <= iSERVO0_PWM_PERIOD;
         when "0100000001" => -- 0x80008404 -- robot_reg[0x101]
@@ -1368,7 +1456,7 @@ begin
         when "0100011111" => -- 0x8000847c -- robot_reg[0x11f]
           iMST_RDATA <= (others => '0');
 
-        -- MOTEURS CC PETIT ROBOT 2018
+        -- MOTEURS CC 
         when "0100100000" => -- 0x80008480 -- robot_reg[0x120]
           iMST_RDATA <= iPUMP0_PWM_PERIOD;
         when "0100100001" => -- 0x80008484 -- robot_reg[0x121]
@@ -1382,9 +1470,9 @@ begin
         when "0100100101" => -- 0x80008494 -- robot_reg[0x125]
           iMST_RDATA <= iMOTOR2_PW;
         when "0100100110" => -- 0x80008498 -- robot_reg[0x126]
-          iMST_RDATA <= (others => '0');
+          iMST_RDATA <= iMOTOR3_PWM_PERIOD;
         when "0100100111" => -- 0x8000849c -- robot_reg[0x127]
-          iMST_RDATA <= (others => '0');
+          iMST_RDATA <= iMOTOR3_PW;
         when "0100101000" => -- 0x800084a0 -- robot_reg[0x128]
           iMST_RDATA <= (others => '0');
         when "0100101001" => -- 0x800084a4 -- robot_reg[0x129]
@@ -1402,7 +1490,7 @@ begin
         when "0100101111" => -- 0x800084bc -- robot_reg[0x12f]
           iMST_RDATA <= (others => '0');
 
-        -- MOTEURS STEPPER PETIT ROBOT 2018
+        -- MOTEURS STEPPER 
         when "0100110000" => -- 0x800084c0 -- robot_reg[0x130]
           iMST_RDATA <= iSTP_POL_0_PERIOD & iSTP_POL_0_CTRL;
         when "0100110001" => -- 0x800084c4 -- robot_reg[0x131]
@@ -1420,10 +1508,10 @@ begin
         when "0100110111" => -- 0x800084dc -- robot_reg[0x137]
           iMST_RDATA <= (others => '0');
 
-        -- BAL & capteurs PETIT ROBOT 2018
+        -- BAL & capteurs 
         when "0100111000" => -- 0x800084e0 -- robot_reg[0x138]
           iMST_RDATA <= X"0000000" & "00" & stp_switch1 & stp_switch0;
-        -- GPIO Audran PR 2019
+        -- GPIO robot 2020
         when "0100111001" => -- 0x800084e4 -- robot_reg[0x139]
           iMST_RDATA <= gpio_in;
         when "0100111010" => -- 0x800084e8 -- robot_reg[0x13a]
@@ -1431,13 +1519,31 @@ begin
         when "0100111011" => -- 0x800084ec -- robot_reg[0x13b]
           iMST_RDATA <= (others => '0');
         when "0100111100" => -- 0x800084f0 -- robot_reg[0x13c]
-          iMST_RDATA <= iROBOT2018_BAL0;
+          iMST_RDATA <= iROBOT_BAL0;
         when "0100111101" => -- 0x800084f4 -- robot_reg[0x13d]
-          iMST_RDATA <= iROBOT2018_BAL1;
+          iMST_RDATA <= iROBOT_BAL1;
         when "0100111110" => -- 0x800084f8 -- robot_reg[0x13e]
-          iMST_RDATA <= iROBOT2018_BAL2;
+          iMST_RDATA <= iROBOT_BAL2;
         when "0100111111" => -- 0x800084fc -- robot_reg[0x13f]
-          iMST_RDATA <= iROBOT2018_BAL3;
+          iMST_RDATA <= iROBOT_BAL3;
+
+        when "0101000000" => -- 0x80008500 -- robot_reg[0x140]
+          iMST_RDATA <= iROBOT_BAL4;
+        when "0101000001" => -- 0x80008504 -- robot_reg[0x141]
+          iMST_RDATA <= iROBOT_BAL5;
+        when "0101000010" => -- 0x80008508 -- robot_reg[0x142]
+          iMST_RDATA <= iROBOT_BAL6;
+        when "0101000011" => -- 0x8000850c -- robot_reg[0x143]
+          iMST_RDATA <= iROBOT_BAL7;
+
+        when "0101000100" => -- 0x80008510 -- robot_reg[0x144]
+          iMST_RDATA <= iROBOT_BAL8;
+        when "0101000101" => -- 0x80008514 -- robot_reg[0x145]
+          iMST_RDATA <= iROBOT_BAL9;
+        when "0101000110" => -- 0x80008518 -- robot_reg[0x146]
+          iMST_RDATA <= iROBOT_BAL10;
+        when "0101000111" => -- 0x8000851c -- robot_reg[0x147]
+          iMST_RDATA <= iROBOT_BAL11;
 
         when others =>
       end case;

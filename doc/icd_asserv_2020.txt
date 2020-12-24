@@ -1,0 +1,86 @@
+CONTROLE ET ASSERVISEEMENT POUR LES ASCENSEURS DU ROBOT 2020
+
+* Ressources hardware utilisees:
+ - GPIO :
+   - pour les roues codeuses:
+     - PIN_N12  : QEI_M1_B : Ch B RC de l'ascenseur gauche
+     - PIN_P9   : QEI_M1_A : Ch A - " -
+     - PIN_N9   : QEI_M2_B : Ch B RC de l'ascenseur droit
+     - PIN_N11  : QEI_M2_A : Ch A - " -
+   - pour les moteurs:
+     - PIN_R11  : MOT1_PWM : PWM pour moteur gauche
+     - PIN_T10  : MOT1_DIR : DIR - " -
+     - PIN_R10  : MOT2_PWM : PWM pour moteur droit
+     - PIN_P11  : MOT2_DIR : DIR - " -
+   - pour les capteurs de fin de course - FIXME : TODO:
+     - PIN_???  : GPIO_??? : capteur de fin de course gauche (en haut de l'ascenseur)
+     - PIN_???  : GPIO_??? : capteur de fin de course droit  (en haut de l'ascenseur)
+ - Registres HW mappes en espace APB :
+   - pour les roues codeuses:
+     - ODO_1_POS : @0x80008204 (robot_reg[0x81]) : position encodeur G (valeur de type "signed int 32b")
+     - ODO_2_POS : @0x80008224 (robot_reg[0x89]) : position encodeur D (valeur de type "signed int 32b")
+   - pour les moteurs:
+     - MOTOR2_PW : @0x80008494 (robot_reg[0x125]) : "commande moteur" G (valeur de type "signed int 32b")
+     - MOTOR3_PW : @0x8000849c (robot_reg[0x127]) : "commande moteur" D (valeur de type "signed int 32b")
+     NOTE : les "commandes" moteurs representent en fait la duree de la "phase positive" de chaque signal PWM, la duree totale de chaque cycle PWM etant controllee par les registres MOTORx_PWM_PERIOD non documentes ici.
+   - pour les capteurs de fin de course:
+     - GPIO_IN   : @0x800084e4 (robot_reg[0x139]) : GPIOs discrets du robot 2020 : les bits importants pour les ascenseurs sont :
+       - bit ??? : pour capteur de fin de course gauche
+       - bit ??? : pour capteur de fin de course droit
+
+* Interface de commande & controle :
+  - 8 registres APB de communication avec le "haut niveau", 4 pour chaque cote (accessibles via l'interface SPI du FPGA):
+    - CMD_REG_G : @0x80008500 (robot_reg[0x140]) : commande gauche
+    - STA_REG_G : @0x80008504 (robot_reg[0x141]) : status gauche
+    - POS_REG_G : @0x80008508 (robot_reg[0x142]) : position gauche
+    - DBG_REG_G : @0x8000850c (robot_reg[0x143]) : debug gauche
+    - CMD_REG_D : @0x80008510 (robot_reg[0x144]) : commande droite
+    - STA_REG_D : @0x80008514 (robot_reg[0x145]) : status droite
+    - POS_REG_D : @0x80008518 (robot_reg[0x146]) : position droite
+    - DBG_REG_D : @0x8000851c (robot_reg[0x147]) : debug droite
+
+* Description des registres de commande:
+  - en ECRITURE ils acceptent les commandes suivantes:
+    - CMD_SET_ENABLE       : 0x1000000v : activer ou desactiver l'asserv
+      - v=1 => active l'asserv
+      - v=0 => desactive l'asserv
+    - CMD_SET_KP           : 0x2xxxyyyy : setter la valeur du Kp du filtre PID
+      - xxx.yyyy est une valeur en virgule fixe signee avec 12 bits pour la partie entiere et 16 bits pour la partie fractionnaire
+    - CMD_SET_KI           : 0x3xxxyyyy : setter la valeur du Ki du filtre PID
+      - xxx.yyyy idem
+    - CMD_SET_KD           : 0x4xxxyyyy : setter la valeur du Kd du filtre PID
+      - xxx.yyyy idem
+    - CMD_DO_HOMING        : 0x50000000 : demarre le "homing" (l'action s'arrete quand le capteur de fin de course est touche)
+    - CMD_JUMP_TARGET      : 0x6vvvvvvv : "saute" a la cible de position "vvvvvvv" (valeur entiere signee 28bits). La consigne de position est forcee "brutallement" a cette valeur et l'asservissement essayera de corriger la position courante en tenant compte de la nouvelle consigne. A la fin de l'action l'asservissement reste actif et maintient la valeur finale de position. /!\ Ne pas utiliser cette commande sauf pour le debug et la calibration.
+    - CMD_GOTO_TARGET      : 0x7vvvvvvv : se deplace "progressivement" a la nouvelle cible de position "vvvvvvv" (valeur entiere signee 28bits). La consigne de position est incrementee progressivement (avec la vitesse "goto_speed" voir plus bas) jusqu'a cette valeur finale et l'asservissement essayera de corriger la position courante pendant la toute la duree de l'action. A la fin de l'action l'asservissement reste actif et maintient la valeur finale de position.
+    - CMD_SET_RANGE_CLAMP  : 0x8rrrpppp : set du "max range" et du "pwm clamp"
+      - "rrr"  : valeur 12b specifiant le "max range" de l'ascenseur
+      - "pppp" : valeur 16b specifiant le "clam" i.e la valeur "limite" des pwm des moteurs
+    - CMD_SET_BLTRIG_SPEED : 0x9tttssss : set du 'block_trig" et du "goto_speed"
+      - "ttt"  : valeur 12b specifiant la "sensibilite au blocage" de l'ascenseur (en fait ca represente la valeur limite d'un conteur interne qui s'incremente a chaque iteration de la boucle d'asservissement si l'erreur de position est plus grande qu'un seuil)
+      - "ssss" : valeur 16b specifiant la "vitesse de deplacement GOTO" de l'ascenseur : sa signification physique est la suivante : a chaque iteration de la boucle d'asservissement (qui dure 10 milisecondes), la consigne courante est incremente (ou decrementee) de cette valeur (/!\ l'unite de mesure ce ne sont pas des mm, mais des increments de roue codeuse)
+    - CMD_DEBUG5           : 0xa0000000 : pas utilise
+    - CMD_DEBUG4           : 0xb0000000 : pas utilise
+    - CMD_DEBUG3           : 0xc0000000 : pas utilise
+    - CMD_DEBUG2           : 0xd0000000 : pas utilise
+    - CMD_DEBUG1           : 0xe0000000 : pas utilise
+    - CMD_RESET_ERROR      : 0xf0000000 : efface le flag d'erreur du registre interne de status de l'asserv
+  - en LECTURE les registres de commande indiquent la bonne execution de la commande precedement envoyee:
+    - valeur 0x00031337 : commande OK
+    - valeur 0x0badcafe : commande KO
+
+* Description des registres de status:
+  - en LECTURE ils contienent les champs binaires suivants:
+    - FLAGS  : 0x000000ff
+    - ERRORS : 0x0000ff00
+    - STATE  : 0xff000000
+      - les etats definis sont :
+        - STATE_DISABLED - 0x00000000 : asserv desactive
+        - STATE_HOMING   - 0x01000000 : ascenseur en cours de "homing"
+        - STATE_HOLD_POS - 0x02000000 : asserv "statique" garde la pos courante
+        - STATE_GOTO_POS - 0x03000000 : asserv "dynamique" va a une cible precedement definie
+        - STATE_ERROR    - 0xff000000 : etat d'erreur (pas utilise)
+
+* Description des registres de position:
+  - en LECTURE ils contienent simplement la position (relative) courante de l'ascenseur
+

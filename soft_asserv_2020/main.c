@@ -253,102 +253,14 @@ int main ()
     uint32_t mem_test_addr;
     uint32_t mem_test_data;
 
-#if 0 /* FIXME : DEBUG */
-    int monitoring_flag = 0;
-    int monitoring_cnt = 0;
-#endif
-
     i2c_test_data = 0;
 
     uart_init ( B115200 );
 
-#if 0 /* FIXME : DEBUG */
-    {
-      int pwd_state;
-      leds = 0xaa;
-      pwd_state = 0;
-      for (;;) {
-        asm ( "nop" );
-        *leds_reg = leds & 0xff;
-        asm ( "nop" );
-
-        sleep ( 100 );
-
-        asm ( "nop" );
-        leds ^= mask;
-        asm ( "nop" );
-
-        unsigned int my_uartstatus1 = hw->uartstatus1;
-        if ( my_uartstatus1 & UART_STATUS_DR ) {
-          unsigned int my_uartdata1 = hw->uartdata1;
-          uart_byte = my_uartdata1;
-          switch (pwd_state) {
-          case 0:
-            if (uart_byte=='g') pwd_state = 1; else pwd_state = 0;
-            break;
-          case 1:
-            if (uart_byte=='o') pwd_state = 2; else pwd_state = 0;
-            break;
-          case 2:
-            if (uart_byte=='l') pwd_state = 3; else pwd_state = 0;
-            break;
-          case 3:
-            if (uart_byte=='d') pwd_state = 4; else pwd_state = 0;
-            break;
-          case 4:
-            if (uart_byte=='o') pwd_state = 5; else pwd_state = 0;
-            break;
-          }
-        }
-
-        if (pwd_state == 5) break;
-      }
-    }
-#endif
 
     uart_putchar ( 0xa );
-    uart_putstring ( "Robot GOLDO - soft test asserv 2020 - DEBUG" );
-#if 0 /* FIXME : DEBUG */
+    uart_putstring ( "Robot GOLDO - soft asserv 2020 - RELEASE" );
     uart_putchar ( 0xa );
-    uart_putstring ( "Fonctions OK :" );
-    uart_putchar ( 0xa );
-    uart_putstring ( "   @ : adresse de test AHB/APB" );
-    uart_putchar ( 0xa );
-    uart_putstring ( "   $ : data de test AHB/APB" );
-    uart_putchar ( 0xa );
-    uart_putstring ( "   R : test lecture 32b AHB/APB" );
-    uart_putchar ( 0xa );
-    uart_putstring ( "   W : test ecriture 32b AHB/APB" );
-    uart_putchar ( 0xa );
-    uart_putstring ( "   + : increment debug reg" );
-    uart_putchar ( 0xa );
-    uart_putstring ( "   - : decrement debug reg" );
-    uart_putchar ( 0xa );
-    uart_putstring ( "   w : ecrire ds trace i2c" );
-    uart_putchar ( 0xa );
-    uart_putstring ( "   r : lire ds bstr i2c" );
-    uart_putchar ( 0xa );
-    uart_putstring ( "   P : entrer valeur Kp" );
-    uart_putchar ( 0xa );
-    uart_putstring ( "   I : entrer valeur Ki" );
-    uart_putchar ( 0xa );
-    uart_putstring ( "   D : entrer valeur Kd" );
-    uart_putchar ( 0xa );
-    uart_putstring ( "   C : entrer valeur consigne" );
-    uart_putchar ( 0xa );
-    uart_putstring ( "   H : homing" );
-    uart_putchar ( 0xa );
-    uart_putstring ( "   M : activer/desactiver monitoring" );
-    uart_putchar ( 0xa );
-    uart_putstring ( "   * : activer/desactiver asserv" );
-    uart_putchar ( 0xa );
-    uart_putstring ( "   ? : position courante encodeur" );
-    uart_putchar ( 0xa );
-    uart_putstring ( "   ! : charger nouveau soft" );
-    uart_putchar ( 0xa );
-    uart_putstring ( "   % : robot reset" );
-    uart_putchar ( 0xa );
-#endif
 
     uart_putchar ( 0xa );
     loop_cnt=0;
@@ -372,40 +284,6 @@ int main ()
         unsigned int my_uartdata1 = hw->uartdata1;
 
         uart_byte = my_uartdata1;
-
-#if 0 /* FIXME : DEBUG */
-        if ((uart_byte=='w') || (uart_byte=='r')) {
-          /* debug i2c (slave) */
-          unsigned int i2c_val;
-          uart_putstring ( "DEBUG I2C: " );
-          uart_putchar ( 0xa );
-          if ((uart_byte=='r')) {
-            uart_putstring ( " bstr data: " );
-            i2c_test_data = robot_reg[R_ROBOT_I2C_BSTR_D];
-            uart_printhex ( i2c_test_data );
-            uart_putchar ( 0xa );
-          }
-          if ((uart_byte=='w')) {
-            // robot_reg[R_ROBOT_I2C_TRACE_D] = robot_timer_val;
-            uart_putstring ( " write to trace: " );
-            uart_printhex ( i2c_test_data );
-            uart_putchar ( 0xa );
-            robot_reg[R_ROBOT_I2C_TRACE_D] = i2c_test_data;
-          }
-          uart_putstring ( " trace status: " );
-          i2c_val = robot_reg[R_ROBOT_I2C_TRACE_CS];
-          uart_printhex ( i2c_val );
-          uart_putchar ( 0xa );
-          uart_putstring ( " trace data dbg: " );
-          i2c_val = robot_reg[R_ROBOT_I2C_TRACE_D];
-          uart_printhex ( i2c_val );
-          uart_putchar ( 0xa );
-          uart_putstring ( " bstr status: " );
-          i2c_val = robot_reg[R_ROBOT_I2C_BSTR_CS];
-          uart_printhex ( i2c_val );
-          uart_putchar ( 0xa );
-        }
-#endif
 
         if (uart_byte=='@') {
           uart_putstring ( "@ : " );
@@ -439,14 +317,6 @@ int main ()
           uart_putchar ( 0xa );
         }
 
-#if 0 /* FIXME : DEBUG */
-        if ((uart_byte=='!')) { /* load new soft */
-          uart_putchar ( '!' );
-          uart_putchar ( 0xa );
-          asm ( "call 0x10000000" ); /* call load_bitstream */
-        }
-#endif
-
         if ((uart_byte=='%')) { /* robot reset */
           uart_putstring ( "RESET" );
           uart_putchar ( 0xa );
@@ -465,56 +335,6 @@ int main ()
         /*** ASSERV 2020 DEBUG ***/
         /*************************/
         {
-          if (uart_byte=='P') {
-            uart_putstring ( "Kp : " );
-            edit_input_buf ();
-            ga_left.conf_Kp = convert_input_buf_to_hexint();
-            uart_putchar ( 0xa );
-          }
-
-          if (uart_byte=='I') {
-            uart_putstring ( "Ki : " );
-            edit_input_buf ();
-            ga_left.conf_Ki = convert_input_buf_to_hexint();
-            uart_putchar ( 0xa );
-          }
-
-          if (uart_byte=='D') {
-            uart_putstring ( "Kd : " );
-            edit_input_buf ();
-            ga_left.conf_Kd = convert_input_buf_to_hexint();
-            uart_putchar ( 0xa );
-          }
-
-          if (uart_byte=='C') {
-            int asserv_target;
-            uart_putstring ( "C : " );
-            edit_input_buf ();
-            asserv_target = convert_input_buf_to_hexint();
-            uart_putchar ( 0xa );
-            jump_to_rel_target (&ga_left, asserv_target);
-          }
-
-          if (uart_byte=='H') {
-            uart_putstring ( "GO HOME" );
-            uart_putchar ( 0xa );
-            start_homing (&ga_left);
-          }
-
-          if (uart_byte=='*') {
-            if (!asserv_active(&ga_left)) {
-              uart_putstring ( "enable asserv" );
-              uart_putchar ( 0xa );
-              enable_asserv (&ga_left, 1);
-              /* FIXME : TODO : right side */
-            } else {
-              uart_putstring ( "disable asserv" );
-              uart_putchar ( 0xa );
-              enable_asserv (&ga_left, 0);
-              /* FIXME : TODO : right side */
-            }
-          }
-
           if (uart_byte=='?') {
             uart_putstring ( "target : " );
             uart_putchar ( 0xa );
@@ -573,51 +393,6 @@ int main ()
             uart_putchar ( 0xa );
           }
 
-          if (uart_byte=='T') {
-            int test_Ip=0, test_Ii=0, test_Id=0;
-            int test_O=0;
-
-            uart_putchar ( 0xa );
-            uart_putstring ( "TEST" );
-            uart_putchar ( 0xa );
-
-            uart_putstring ( "INp = " );
-            edit_input_buf ();
-            test_Ip = convert_input_buf_to_hexint();
-            uart_putchar ( 0xa );
-
-            uart_putstring ( "INi = " );
-            edit_input_buf ();
-            test_Ii = convert_input_buf_to_hexint();
-            uart_putchar ( 0xa );
-
-            uart_putstring ( "INd = " );
-            edit_input_buf ();
-            test_Id = convert_input_buf_to_hexint();
-            uart_putchar ( 0xa );
-
-            uart_putchar ( 0xa );
-            test_O = do_test_asserv (&ga_left, test_Ip, test_Ii, test_Id);
-            uart_putstring ( " OUT = 0x" );
-            uart_printhex ( (unsigned int)test_O );
-            uart_putchar ( 0xa );
-          }
-
-#if 0 /* FIXME : DEBUG */
-          if (uart_byte=='M') {
-            if (monitoring_flag==0) {
-              uart_putstring ( "enable monitoring" );
-              uart_putchar ( 0xa );
-              monitoring_flag = 1;
-              monitoring_cnt = 100;
-            } else {
-              uart_putstring ( "disable monitoring" );
-              uart_putchar ( 0xa );
-              monitoring_flag = 0;
-              monitoring_cnt = 0;
-            }
-          }
-#endif
         } /*** ASSERV 2020 DEBUG ***/
 
       } /* if ( my_uartstatus1 & UART_STATUS_DR ) */
@@ -627,22 +402,6 @@ int main ()
 
       do_step_asserv (&ga_left);
       do_step_asserv (&ga_right);
-
-#if 0 /* FIXME : DEBUG */
-      if (monitoring_flag==1)
-      {
-        if (monitoring_cnt>0)
-        {
-          monitoring_cnt--;
-        }
-        else
-        {
-          uart_printint ( ga_left.asserv_speed_est );
-          uart_putchar ( 0xa );
-          monitoring_cnt = 100;
-        }
-      }
-#endif
 
       robot_timer_val = robot_reg[R_ROBOT_TIMER];
       robot_timer_val_ms = robot_timer_val/1000;

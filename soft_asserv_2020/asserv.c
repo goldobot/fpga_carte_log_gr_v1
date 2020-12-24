@@ -25,15 +25,9 @@ void init_asserv (struct _goldo_asserv *_ga, uint32_t _mot_reg, uint32_t _enc_re
   _ga->conf_max_range = 0x2000;
   _ga->conf_pwm_clamp = 0x100;
   _ga->conf_goto_speed = 20;
-#if 1 /* FIXME : DEBUG : EXPERIMENTAL */
   _ga->conf_Kp = 0x00040000;
   _ga->conf_Ki = 0x00001000;
   _ga->conf_Kd = 0x00010000;
-#else
-  _ga->conf_Kp = 0x00008000;
-  _ga->conf_Ki = 0x00002000;
-  _ga->conf_Kd = 0x00000000;
-#endif
   _ga->conf_block_trig = 20;
 
   _ga->st_homing_abs_pos = 0;
@@ -158,6 +152,7 @@ void process_asserv_cmd (struct _goldo_asserv *_ga)
   my_val32  = robot_reg[cmd_reg];
   cmd_code  = my_val32 & 0xf0000000;
   cmd_param = my_val32 & 0x0fffffff;
+  if (cmd_param & 0x08000000) cmd_param |= 0xf0000000;
 
   if (cmd_code==0) return;
 
@@ -282,13 +277,6 @@ void do_step_asserv (struct _goldo_asserv *_ga)
     _ga->st_asserv_sigma_err += _ga->st_asserv_err;
     if (_ga->st_asserv_sigma_err>16383) _ga->st_asserv_sigma_err=16383;
     if (_ga->st_asserv_sigma_err<-16383) _ga->st_asserv_sigma_err=-16383;
-
-#if 0 /* FIXME : DEBUG : EXPERIMENTAL */
-    if (_ga->st_asserv_sigma_err>10) _ga->st_asserv_sigma_err-=9;
-    if (_ga->st_asserv_sigma_err>1)  _ga->st_asserv_sigma_err-=1;
-    if (_ga->st_asserv_sigma_err<10) _ga->st_asserv_sigma_err+=9;
-    if (_ga->st_asserv_sigma_err<1)  _ga->st_asserv_sigma_err+=1;
-#endif
 
     _ga->st_asserv_output = 
       (_ga->conf_Kp*_ga->st_asserv_err +
