@@ -23,12 +23,12 @@ void init_asserv (struct _goldo_asserv *_ga, uint32_t _mot_reg, uint32_t _enc_re
   _ga->flags = 0; /*GA_STATE_DISABLED*/
 
   _ga->conf_max_range = 0x2000;
-  _ga->conf_pwm_clamp = 0x100;
-  _ga->conf_goto_speed = 20;
-  _ga->conf_Kp = 0x00040000;
-  _ga->conf_Ki = 0x00001000;
-  _ga->conf_Kd = 0x00010000;
-  _ga->conf_block_trig = 20;
+  _ga->conf_pwm_clamp = 0x1c0;
+  _ga->conf_goto_speed = 40;
+  _ga->conf_Kp = 0x00030000;
+  _ga->conf_Ki = 0x00000400;
+  _ga->conf_Kd = 0x00030000;
+  _ga->conf_block_trig = 80;
 
   _ga->st_homing_abs_pos = 0;
   _ga->st_abs_target = 0;
@@ -85,7 +85,7 @@ void enable_asserv (struct _goldo_asserv *_ga, int _enabled)
   volatile uint32_t* robot_reg = ( volatile int* ) ROBOT_BASE_ADDR;
 
   robot_reg[_ga->mot_reg] = 0;
-  if (_enabled==0) 
+  if (_enabled==1) 
   {
     _ga->st_abs_target = _ga->st_abs_pos;
     _ga->st_abs_target_final = _ga->st_abs_pos;
