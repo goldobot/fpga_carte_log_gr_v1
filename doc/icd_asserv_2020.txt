@@ -55,7 +55,7 @@ CONTROLE ET ASSERVISEEMENT POUR LES ASCENSEURS DU ROBOT 2020
     - CMD_GOTO_TARGET      : 0x7vvvvvvv : se deplace "progressivement" a la nouvelle cible de position "vvvvvvv" (valeur entiere signee 28bits). La consigne de position est incrementee progressivement (avec la vitesse "goto_speed" voir plus bas) jusqu'a cette valeur finale et l'asservissement essayera de corriger la position courante pendant la toute la duree de l'action. A la fin de l'action l'asservissement reste actif et maintient la valeur finale de position.
     - CMD_SET_RANGE_CLAMP  : 0x8rrrpppp : set du "max range" et du "pwm clamp"
       - "rrr"  : valeur 12b specifiant le "max range" de l'ascenseur
-      - "pppp" : valeur 16b specifiant le "clam" i.e la valeur "limite" des pwm des moteurs
+      - "pppp" : valeur 16b specifiant le "clamp" i.e la valeur "limite" des pwm des moteurs
     - CMD_SET_BLTRIG_SPEED : 0x9tttssss : set du 'block_trig" et du "goto_speed"
       - "ttt"  : valeur 12b specifiant la "sensibilite au blocage" de l'ascenseur (en fait ca represente la valeur limite d'un conteur interne qui s'incremente a chaque iteration de la boucle d'asservissement si l'erreur de position est plus grande qu'un seuil)
       - "ssss" : valeur 16b specifiant la "vitesse de deplacement GOTO" de l'ascenseur : sa signification physique est la suivante : a chaque iteration de la boucle d'asservissement (qui dure 10 milisecondes), la consigne courante est incremente (ou decrementee) de cette valeur (/!\ l'unite de mesure ce ne sont pas des mm, mais des increments de roue codeuse)

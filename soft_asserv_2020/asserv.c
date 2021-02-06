@@ -22,8 +22,8 @@ void init_asserv (struct _goldo_asserv *_ga, uint32_t _mot_reg, uint32_t _enc_re
 
   _ga->flags = 0; /*GA_STATE_DISABLED*/
 
-  _ga->conf_max_range = 0x2000;
-  _ga->conf_pwm_clamp = 0x1c0;
+  _ga->conf_max_range = 0xfff;
+  _ga->conf_pwm_clamp = 0x100;
   _ga->conf_goto_speed = 40;
   _ga->conf_Kp = 0x00030000;
   _ga->conf_Ki = 0x00000400;
