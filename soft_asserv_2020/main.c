@@ -225,7 +225,8 @@ void reset_asserv ()
                /* _pos_reg */ 0x142, 
                /* _dbg_reg */ 0x143, 
                /* _sw_reg  */ 0x139, 
-               /* _sw_mask */ 0x00008000);
+               /* _sw_mask */ 0x00004000,
+               /* _polar   */ 1);
   init_asserv (&ga_right, 
                /* _mot_reg */ 0x127, 
                /* _enc_reg */ 0x89,
@@ -234,7 +235,8 @@ void reset_asserv ()
                /* _pos_reg */ 0x146, 
                /* _dbg_reg */ 0x147, 
                /* _sw_reg  */ 0x139, 
-               /* _sw_mask */ 0x00008000);
+               /* _sw_mask */ 0x00008000,
+               /* _polar   */ -1);
 }
 
 int main ()

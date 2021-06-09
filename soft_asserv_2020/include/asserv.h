@@ -50,6 +50,7 @@ typedef struct _goldo_asserv {
   int conf_Ki;
   int conf_Kd;
   int conf_block_trig;
+  int conf_polar;
 
   int st_homing_abs_pos;
   int st_abs_target_final;
@@ -74,7 +75,7 @@ typedef struct _goldo_asserv {
   uint32_t sw_mask;
 } goldo_asserv_t;
 
-void init_asserv (struct _goldo_asserv *_ga, uint32_t _mot_reg, uint32_t _enc_reg, uint32_t _cmd_reg, uint32_t _sta_reg, uint32_t _pos_reg, uint32_t _dbg_reg, uint32_t _sw_reg, uint32_t _sw_mask);
+void init_asserv (struct _goldo_asserv *_ga, uint32_t _mot_reg, uint32_t _enc_reg, uint32_t _cmd_reg, uint32_t _sta_reg, uint32_t _pos_reg, uint32_t _dbg_reg, uint32_t _sw_reg, uint32_t _sw_mask, int _polar);
 int asserv_active (struct _goldo_asserv *_ga);
 void enable_asserv (struct _goldo_asserv *_ga, int _enabled);
 void set_Kp (struct _goldo_asserv *_ga, int _new_Kp);

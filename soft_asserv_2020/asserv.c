@@ -16,12 +16,14 @@ void asserv_state_set (struct _goldo_asserv *_ga, uint32_t _state);
 
 void init_asserv (struct _goldo_asserv *_ga, uint32_t _mot_reg, uint32_t _enc_reg,
                   uint32_t _cmd_reg, uint32_t _sta_reg, uint32_t _pos_reg, uint32_t _dbg_reg,
-                  uint32_t _sw_reg, uint32_t _sw_mask)
+                  uint32_t _sw_reg, uint32_t _sw_mask, int _polar)
 {
   volatile uint32_t* robot_reg = ( volatile int* ) ROBOT_BASE_ADDR;
 
   _ga->flags = 0; /*GA_STATE_DISABLED*/
 
+#if 0 /* FIXME : TODO : find optimal values for the robot */
+  /* these were used in the experimental setup in 2020 */
   _ga->conf_max_range = 0xfff;
   _ga->conf_pwm_clamp = 0x100;
   _ga->conf_goto_speed = 40;
@@ -29,6 +31,18 @@ void init_asserv (struct _goldo_asserv *_ga, uint32_t _mot_reg, uint32_t _enc_re
   _ga->conf_Ki = 0x00000400;
   _ga->conf_Kd = 0x00030000;
   _ga->conf_block_trig = 80;
+  _ga->conf_polar = _polar;
+#else
+  /* this is the real robot.. */
+  _ga->conf_max_range = 0x3ff; /* should be < 1900 */
+  _ga->conf_pwm_clamp = 0x80;
+  _ga->conf_goto_speed = 40;
+  _ga->conf_Kp = 0x00008000;
+  _ga->conf_Ki = 0x00000000;
+  _ga->conf_Kd = 0x00000000;
+  _ga->conf_block_trig = 80;
+  _ga->conf_polar = _polar;
+#endif
 
   _ga->st_homing_abs_pos = 0;
   _ga->st_abs_target = 0;
@@ -136,7 +150,7 @@ int get_abs_pos (struct _goldo_asserv *_ga)
 
 int get_rel_pos (struct _goldo_asserv *_ga) 
 {
-  return (_ga->st_abs_pos-_ga->st_homing_abs_pos);
+  return (_ga->st_abs_pos - _ga->st_homing_abs_pos + _ga->conf_max_range);
 }
 
 
@@ -233,12 +247,13 @@ void do_step_asserv (struct _goldo_asserv *_ga)
   uint32_t dbg_reg = _ga->dbg_reg;
   uint32_t sw_reg  = _ga->sw_reg;
   uint32_t sw_mask = _ga->sw_mask;
+  int polar = _ga->conf_polar;
 
   int old_abs_pos = _ga->st_abs_pos;
 
   /* lecture position et estimation de vitesse */
   {
-    _ga->st_abs_pos = robot_reg[enc_reg];
+    _ga->st_abs_pos = polar * robot_reg[enc_reg];
 
     _ga->st_speed_est = _ga->st_abs_pos - old_abs_pos;
   }
@@ -285,7 +300,8 @@ void do_step_asserv (struct _goldo_asserv *_ga)
     if (_ga->st_asserv_output>conf_pwm_clamp) _ga->st_asserv_output=conf_pwm_clamp;
     if (_ga->st_asserv_output<-conf_pwm_clamp) _ga->st_asserv_output=-conf_pwm_clamp;
 
-    robot_reg[mot_reg] = (unsigned int) _ga->st_asserv_output;
+    //robot_reg[mot_reg] = (unsigned int) _ga->st_asserv_output;
+    robot_reg[mot_reg] = polar * _ga->st_asserv_output;
 
     _ga->st_asserv_old_err = _ga->st_asserv_err;
   } 
@@ -347,7 +363,7 @@ void do_step_asserv (struct _goldo_asserv *_ga)
 
   /* m.a.j des registres d'interface avec le nouvel etat */
   robot_reg[sta_reg] = _ga->flags;
-  tmp_int = _ga->st_abs_pos - _ga->st_homing_abs_pos;
+  tmp_int = _ga->st_abs_pos - _ga->st_homing_abs_pos + _ga->conf_max_range;
   tmp_uint = tmp_int;
   robot_reg[pos_reg] = tmp_uint;
 #if 1 /* FIXME : DEBUG */
@@ -391,7 +407,7 @@ int security_check_ok(struct _goldo_asserv *_ga, int _target)
 
 int jump_to_rel_target (struct _goldo_asserv *_ga, int _target)
 {
-  int new_abs_target = _target + _ga->st_homing_abs_pos;
+  int new_abs_target = _target + _ga->st_homing_abs_pos - _ga->conf_max_range;
 
   if (!security_check_ok(_ga, _target)) return 0;
 
@@ -413,7 +429,7 @@ int jump_to_rel_target (struct _goldo_asserv *_ga, int _target)
 
 int go_to_rel_target (struct _goldo_asserv *_ga, int _target)
 {
-  int new_abs_target = _target + _ga->st_homing_abs_pos;
+  int new_abs_target = _target + _ga->st_homing_abs_pos - _ga->conf_max_range;
 
   if (!security_check_ok(_ga, _target)) return 0;
 
@@ -431,7 +447,7 @@ void start_homing (struct _goldo_asserv *_ga)
   volatile uint32_t* robot_reg = ( volatile int* ) ROBOT_BASE_ADDR;
 
   asserv_state_set (_ga, GA_STATE_HOMING);
-  robot_reg[_ga->mot_reg] = -_ga->conf_pwm_clamp/4;
+  robot_reg[_ga->mot_reg] = _ga->conf_polar * _ga->conf_pwm_clamp/4;
 }
 
 
