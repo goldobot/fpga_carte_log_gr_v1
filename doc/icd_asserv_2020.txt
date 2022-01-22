@@ -81,6 +81,11 @@ CONTROLE ET ASSERVISEEMENT POUR LES ASCENSEURS DU ROBOT 2020
         - STATE_GOTO_POS - 0x03000000 : asserv "dynamique" va a une cible precedement definie
         - STATE_ERROR    - 0xff000000 : etat d'erreur (pas utilise)
 
+* Flags :
+  - FLAG_HOMING_DONE     - 0x00000001
+  - FLAG_AT_HOME         - 0x00000002
+  - FLAG_AT_HOME_PREV    - 0x00000004
+
 * Description des registres de position:
   - en LECTURE ils contienent simplement la position (relative) courante de l'ascenseur
 

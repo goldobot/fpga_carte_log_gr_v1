@@ -319,7 +319,7 @@ int main ()
           uart_putchar ( 0xa );
         }
 
-        if ((uart_byte=='%')) { /* robot reset */
+        if ((uart_byte=='%') || ((robot_reg[R_ROBOT_RESET]&0x80000000)==0x80000000)) { /* robot reset */
           uart_putstring ( "RESET" );
           uart_putchar ( 0xa );
           robot_reg[R_ROBOT_RESET] = 1;

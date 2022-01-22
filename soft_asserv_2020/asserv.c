@@ -446,9 +446,9 @@ void start_homing (struct _goldo_asserv *_ga)
 {
   volatile uint32_t* robot_reg = ( volatile int* ) ROBOT_BASE_ADDR;
 
+  _ga->flags = _ga->flags & (~GA_FLAG_HOMING_DONE);
   asserv_state_set (_ga, GA_STATE_HOMING);
   robot_reg[_ga->mot_reg] = _ga->conf_polar * _ga->conf_pwm_clamp/4;
 }
-
 
 
