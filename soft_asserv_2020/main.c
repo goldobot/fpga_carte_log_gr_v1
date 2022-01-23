@@ -215,6 +215,8 @@ void edit_input_buf ()
 struct _goldo_asserv ga_left;
 struct _goldo_asserv ga_right;
 
+#define R_ROBOT_GPIO        0x139
+
 void reset_asserv ()
 {
   init_asserv (&ga_left, 
@@ -319,14 +321,12 @@ int main ()
           uart_putchar ( 0xa );
         }
 
-        if ((uart_byte=='%') || ((robot_reg[0x02]&0x80000000)==0x80000000)) { /* robot reset */
+        if (uart_byte=='%') { /* robot reset */
           uart_putstring ( "RESET" );
           uart_putchar ( 0xa );
-          robot_reg[0x02] = 0;
           robot_reg[R_ROBOT_RESET] = 1;
           robot_reg[R_ROBOT_RESET] = 0;
 
-          /* ROBOT 2020 */
           reset_asserv();
 
           robot_timer_val = robot_reg[R_ROBOT_TIMER];
@@ -399,6 +399,41 @@ int main ()
         } /*** ASSERV 2020 DEBUG ***/
 
       } /* if ( my_uartstatus1 & UART_STATUS_DR ) */
+
+      if ((robot_reg[R_ROBOT_DEBUG]&0x80000000)==0x80000000) { /* robot reset */
+        uart_putstring ( "RESET" );
+        uart_putchar ( 0xa );
+        robot_reg[R_ROBOT_DEBUG] = 0;
+        robot_reg[R_ROBOT_RESET] = 1;
+        robot_reg[R_ROBOT_RESET] = 0;
+
+        reset_asserv();
+
+        robot_timer_val = robot_reg[R_ROBOT_TIMER];
+        robot_sync_barrier = robot_timer_val + ROBOT_SAMPLING_INT;
+      }
+
+      if ((robot_reg[R_ROBOT_GPIO]&0x00000008)==0x00000008) { /* power reset */
+        reset_asserv();
+        /* turn off all servos */
+        robot_reg[0x101] = 0;
+        robot_reg[0x103] = 0;
+        robot_reg[0x105] = 0;
+        robot_reg[0x107] = 0;
+        robot_reg[0x109] = 0;
+        robot_reg[0x10b] = 0;
+        robot_reg[0x10d] = 0;
+        robot_reg[0x10f] = 0;
+        robot_reg[0x111] = 0;
+        robot_reg[0x113] = 0;
+        robot_reg[0x115] = 0;
+        robot_reg[0x117] = 0;
+        /* turn off all motors */
+        robot_reg[0x121] = 0;
+        robot_reg[0x123] = 0;
+        robot_reg[0x125] = 0;
+        robot_reg[0x127] = 0;
+      }
 
       process_asserv_cmd(&ga_left);
       process_asserv_cmd(&ga_right);

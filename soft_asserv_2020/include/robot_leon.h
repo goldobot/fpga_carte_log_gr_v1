@@ -21,6 +21,9 @@
 #define R_ROBOT_RESET        0x01
 #define A_ROBOT_RESET        0x80008004
 
+#define R_ROBOT_DEBUG        0x02
+#define A_ROBOT_DEBUG        0x80008008
+
 
 /* i2c slave interface */
 #define R_ROBOT_I2C_TRACE_CS 0x0c

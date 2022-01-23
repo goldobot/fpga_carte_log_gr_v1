@@ -34,8 +34,8 @@ void init_asserv (struct _goldo_asserv *_ga, uint32_t _mot_reg, uint32_t _enc_re
   _ga->conf_polar = _polar;
 #else
   /* this is the real robot.. */
-  _ga->conf_max_range = 0x3ff; /* should be < 1900 */
-  _ga->conf_pwm_clamp = 0x80;
+  _ga->conf_max_range = 0x700; /* should be < 1900 */
+  _ga->conf_pwm_clamp = 0x180;
   _ga->conf_goto_speed = 40;
   _ga->conf_Kp = 0x00008000;
   _ga->conf_Ki = 0x00000000;
