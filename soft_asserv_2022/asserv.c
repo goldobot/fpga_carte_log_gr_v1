@@ -319,7 +319,7 @@ void do_step_asserv (struct _goldo_asserv *_ga)
     _ga->flags = _ga->flags & (~GA_FLAG_AT_HOME_PREV);
 
   my_val32 = robot_reg[sw_reg];
-  if ((my_val32&sw_mask)!=0)
+  if ((my_val32&sw_mask)==0) /* /!\ HW 2022 : 0=ON ; 1=OFF  */
     _ga->flags = _ga->flags | GA_FLAG_AT_HOME;
   else
     _ga->flags = _ga->flags & (~GA_FLAG_AT_HOME);
