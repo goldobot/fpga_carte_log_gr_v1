@@ -36,11 +36,11 @@ void init_asserv (struct _goldo_asserv *_ga, uint32_t _mot_reg, uint32_t _enc_re
 #else
   /* this is the real robot.. */
   _ga->conf_max_range = 0x780; /* should be < 1900 */
-  _ga->conf_pwm_clamp = 0x180;
+  _ga->conf_pwm_clamp = 0x100;
   _ga->conf_goto_speed = 40;
-  _ga->conf_Kp = 0x00008000;
-  _ga->conf_Ki = 0x00000000;
-  _ga->conf_Kd = 0x00000000;
+  _ga->conf_Kp = 0x00010000;
+  _ga->conf_Ki = 0x00000400;
+  _ga->conf_Kd = 0x00010000;
   _ga->conf_block_trig = 80;
   _ga->home_dir = _home_dir;
   _ga->conf_polar = _polar;
@@ -100,15 +100,19 @@ void enable_asserv (struct _goldo_asserv *_ga, int _enabled)
 {
   volatile uint32_t* robot_reg = ( volatile int* ) ROBOT_BASE_ADDR;
 
-  robot_reg[_ga->mot_reg] = 0;
+  //robot_reg[_ga->mot_reg] = 0;
   if (_enabled==1) 
   {
-    _ga->st_abs_target = _ga->st_abs_pos;
-    _ga->st_abs_target_final = _ga->st_abs_pos;
-    asserv_state_set (_ga, GA_STATE_HOLD_POS);
+    if (asserv_state_is (_ga, GA_STATE_DISABLED))
+    {
+      _ga->st_abs_target = _ga->st_abs_pos;
+      _ga->st_abs_target_final = _ga->st_abs_target;
+      asserv_state_set (_ga, GA_STATE_HOLD_POS);
+    }
   }
   else
   {
+    robot_reg[_ga->mot_reg] = 0;
     asserv_state_set (_ga, GA_STATE_DISABLED);
   }
 }
@@ -432,6 +436,8 @@ int jump_to_rel_target (struct _goldo_asserv *_ga, int _target)
 int go_to_rel_target (struct _goldo_asserv *_ga, int _target)
 {
   int new_abs_target = _target + _ga->st_homing_abs_pos - _ga->conf_max_range;
+
+  if (asserv_state_is (_ga, GA_STATE_GOTO_POS)) return 0;
 
   if (!security_check_ok(_ga, _target)) return 0;
 
