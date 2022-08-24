@@ -456,7 +456,7 @@ void start_homing (struct _goldo_asserv *_ga)
 
   _ga->flags = _ga->flags & (~GA_FLAG_HOMING_DONE);
   asserv_state_set (_ga, GA_STATE_HOMING);
-  robot_reg[_ga->mot_reg] = _ga->home_dir * _ga->conf_polar * _ga->conf_pwm_clamp/4;
+  robot_reg[_ga->mot_reg] = _ga->home_dir * _ga->conf_polar * _ga->conf_pwm_clamp/3;
 }
 
 
