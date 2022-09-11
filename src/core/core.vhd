@@ -96,6 +96,11 @@ entity core is
     stp_switch0         : in std_logic;
     stp_switch1         : in std_logic;
 
+    adc_cs              : out std_logic;
+    adc_sclk            : out std_logic;
+    adc_din             : out std_logic;
+    adc_dout            : in std_logic;
+
     -- GPIO
     gpio_in             : in std_logic_vector(31 downto 0);
 
@@ -223,6 +228,11 @@ architecture rtl of core is
       ; stp_1_dir           : out std_logic
       ; stp_switch0         : in std_logic
       ; stp_switch1         : in std_logic
+      -- ADC signals
+      ; adc_cs              : out std_logic
+      ; adc_sclk            : out std_logic
+      ; adc_din             : out std_logic
+      ; adc_dout            : in std_logic
       -- I2C slave signals
       ; sda_in_slv          : in  std_logic
       ; sda_out_slv         : out std_logic
@@ -527,6 +537,11 @@ begin
       stp_1_dir           => stp_1_dir,
       stp_switch0         => stp_switch0,
       stp_switch1         => stp_switch1,
+      -- ADC signals
+      adc_cs              => adc_cs,
+      adc_sclk            => adc_sclk,
+      adc_din             => adc_din,
+      adc_dout            => adc_dout,
       -- I2C slave signals
       sda_in_slv          => i2c_slv_sda_i,
       sda_out_slv         => i2c_slv_sda_o,

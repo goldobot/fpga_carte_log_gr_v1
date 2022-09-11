@@ -63,6 +63,11 @@ entity robot_apb is
     ; stp_1_dir           : out std_logic
     ; stp_switch0         : in std_logic
     ; stp_switch1         : in std_logic
+    -- ADC signals
+    ; adc_cs              : out std_logic
+    ; adc_sclk            : out std_logic
+    ; adc_din             : out std_logic
+    ; adc_dout            : in std_logic
     -- I2C slave signals
     ; sda_in_slv          : in  std_logic
     ; sda_out_slv         : out std_logic
@@ -214,6 +219,25 @@ component STEPPER_POLOLU
   );
 end component;
 
+component ADC128S022 is
+  port (
+    RESET              : in std_logic;
+    CLK                : in std_logic;
+    ADC_DATA0          : out std_logic_vector (15 downto 0);
+    ADC_DATA1          : out std_logic_vector (15 downto 0);
+    ADC_DATA2          : out std_logic_vector (15 downto 0);
+    ADC_DATA3          : out std_logic_vector (15 downto 0);
+    ADC_DATA4          : out std_logic_vector (15 downto 0);
+    ADC_DATA5          : out std_logic_vector (15 downto 0);
+    ADC_DATA6          : out std_logic_vector (15 downto 0);
+    ADC_DATA7          : out std_logic_vector (15 downto 0);
+    ADC_CS             : out std_logic;
+    ADC_SCLK           : out std_logic;
+    ADC_DIN            : out std_logic;
+    ADC_DOUT           : in std_logic
+  );
+end component;
+
 
   signal iRESET               : std_logic;
 
@@ -244,6 +268,15 @@ end component;
   signal iUS1_ACTUAL_DIST     : std_logic_vector (31 downto 0);
   signal iUS2_ACTUAL_DIST     : std_logic_vector (31 downto 0);
   signal iUS3_ACTUAL_DIST     : std_logic_vector (31 downto 0);
+
+  signal iADC_DATA0           : std_logic_vector (15 downto 0);
+  signal iADC_DATA1           : std_logic_vector (15 downto 0);
+  signal iADC_DATA2           : std_logic_vector (15 downto 0);
+  signal iADC_DATA3           : std_logic_vector (15 downto 0);
+  signal iADC_DATA4           : std_logic_vector (15 downto 0);
+  signal iADC_DATA5           : std_logic_vector (15 downto 0);
+  signal iADC_DATA6           : std_logic_vector (15 downto 0);
+  signal iADC_DATA7           : std_logic_vector (15 downto 0);
 
   signal iSERVO0_PWM_PERIOD   : std_logic_vector (31 downto 0);
   signal iSERVO0_PW           : std_logic_vector (31 downto 0);
@@ -621,6 +654,24 @@ begin
       DIR => stp_1_dir
     );
 
+  c_adc128s022 : ADC128S022
+    port map (
+      RESET => iRESET,
+      CLK => pclk,
+      ADC_DATA0 => iADC_DATA0,
+      ADC_DATA1 => iADC_DATA1,
+      ADC_DATA2 => iADC_DATA2,
+      ADC_DATA3 => iADC_DATA3,
+      ADC_DATA4 => iADC_DATA4,
+      ADC_DATA5 => iADC_DATA5,
+      ADC_DATA6 => iADC_DATA6,
+      ADC_DATA7 => iADC_DATA7,
+      ADC_CS => adc_cs,
+      ADC_SCLK => adc_sclk,
+      ADC_DIN => adc_din,
+      ADC_DOUT => adc_dout
+    );
+
   c_robot_spi_slave : ROBOT_SPI_SLAVE
     port map (
 --      CLK => clk_i_100,
@@ -996,6 +1047,40 @@ begin
             null; -- <available>
           when "0011011111" => -- 0x8000837c -- robot_reg[0xdf]
             null; -- <available>
+
+          -- ADC
+          when "0011100000" => -- 0x80008380 -- robot_reg[0xe0]
+            null; -- FIXME : TODO : ADC conf
+          when "0011100001" => -- 0x80008384 -- robot_reg[0xe1]
+            null;
+          when "0011100010" => -- 0x80008388 -- robot_reg[0xe2]
+            null;
+          when "0011100011" => -- 0x8000838c -- robot_reg[0xe3]
+            null;
+          when "0011100100" => -- 0x80008390 -- robot_reg[0xe4]
+            null;
+          when "0011100101" => -- 0x80008394 -- robot_reg[0xe5]
+            null;
+          when "0011100110" => -- 0x80008398 -- robot_reg[0xe6]
+            null;
+          when "0011100111" => -- 0x8000839c -- robot_reg[0xe7]
+            null;
+          when "0011101000" => -- 0x800083a0 -- robot_reg[0xe8]
+            null;
+          when "0011101001" => -- 0x800083a4 -- robot_reg[0xe9]
+            null;
+          when "0011101010" => -- 0x800083a8 -- robot_reg[0xea]
+            null;
+          when "0011101011" => -- 0x800083ac -- robot_reg[0xeb]
+            null;
+          when "0011101100" => -- 0x800083b0 -- robot_reg[0xec]
+            null;
+          when "0011101101" => -- 0x800083b4 -- robot_reg[0xed]
+            null;
+          when "0011101110" => -- 0x800083b8 -- robot_reg[0xee]
+            null;
+          when "0011101111" => -- 0x800083bc -- robot_reg[0xef]
+            null;
 
           -- SERVO 
           when "0100000000" => -- 0x80008400 -- robot_reg[0x100]
@@ -1388,6 +1473,40 @@ begin
         when "0011011110" => -- 0x80008378 -- robot_reg[0xde]
           iMST_RDATA <= (others => '0');
         when "0011011111" => -- 0x8000837c -- robot_reg[0xdf]
+          iMST_RDATA <= (others => '0');
+
+        -- ADC
+        when "0011100000" => -- 0x80008380 -- robot_reg[0xe0]
+          iMST_RDATA <= X"0000"&iADC_DATA0; -- ADC chan 0
+        when "0011100001" => -- 0x80008384 -- robot_reg[0xe1]
+          iMST_RDATA <= X"0000"&iADC_DATA1; -- ADC chan 1
+        when "0011100010" => -- 0x80008388 -- robot_reg[0xe2]
+          iMST_RDATA <= X"0000"&iADC_DATA2; -- ADC chan 2
+        when "0011100011" => -- 0x8000838c -- robot_reg[0xe3]
+          iMST_RDATA <= X"0000"&iADC_DATA3; -- ADC chan 3
+        when "0011100100" => -- 0x80008390 -- robot_reg[0xe4]
+          iMST_RDATA <= X"0000"&iADC_DATA4; -- ADC chan 4
+        when "0011100101" => -- 0x80008394 -- robot_reg[0xe5]
+          iMST_RDATA <= X"0000"&iADC_DATA5; -- ADC chan 5
+        when "0011100110" => -- 0x80008398 -- robot_reg[0xe6]
+          iMST_RDATA <= X"0000"&iADC_DATA6; -- ADC chan 6
+        when "0011100111" => -- 0x8000839c -- robot_reg[0xe7]
+          iMST_RDATA <= X"0000"&iADC_DATA7; -- ADC chan 7
+        when "0011101000" => -- 0x800083a0 -- robot_reg[0xe8]
+          iMST_RDATA <= (others => '0');
+        when "0011101001" => -- 0x800083a4 -- robot_reg[0xe9]
+          iMST_RDATA <= (others => '0');
+        when "0011101010" => -- 0x800083a8 -- robot_reg[0xea]
+          iMST_RDATA <= (others => '0');
+        when "0011101011" => -- 0x800083ac -- robot_reg[0xeb]
+          iMST_RDATA <= (others => '0');
+        when "0011101100" => -- 0x800083b0 -- robot_reg[0xec]
+          iMST_RDATA <= (others => '0');
+        when "0011101101" => -- 0x800083b4 -- robot_reg[0xed]
+          iMST_RDATA <= (others => '0');
+        when "0011101110" => -- 0x800083b8 -- robot_reg[0xee]
+          iMST_RDATA <= (others => '0');
+        when "0011101111" => -- 0x800083bc -- robot_reg[0xef]
           iMST_RDATA <= (others => '0');
 
         -- SERVO 

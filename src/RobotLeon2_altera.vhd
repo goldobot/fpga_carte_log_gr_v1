@@ -62,6 +62,11 @@ entity RobotLeon2_altera is
     ; QEI_M2_A            : in std_logic
     ; QEI_M2_B            : in std_logic
 
+    ; ADC_CS_N            : out std_logic
+    ; ADC_SADDR           : out std_logic
+    ; ADC_SDAT            : in std_logic
+    ; ADC_SCLK            : out std_logic
+
     -- GPIOs
     ; GPIO_0_IN0          : in std_logic
 
@@ -256,6 +261,12 @@ component core
     stp_switch0         : in std_logic;
     stp_switch1         : in std_logic;
 
+    -- ADC signals
+    adc_cs              : out std_logic;
+    adc_sclk            : out std_logic;
+    adc_din             : out std_logic;
+    adc_dout            : in std_logic;
+
     -- GPIO
     gpio_in             : in std_logic_vector(31 downto 0);
 
@@ -309,6 +320,11 @@ signal iDEBUG_SPI       : std_logic;
 
 signal iGPIO_IN         : std_logic_vector(31 downto 0);
 
+signal iADC_CS_N        : std_logic;
+signal iADC_SADDR       : std_logic;
+signal iADC_SDAT        : std_logic;
+signal iADC_SCLK        : std_logic;
+
 begin
 
   -- reset management
@@ -331,6 +347,20 @@ begin
   rx2 <= '1';
   -- dtx<= tx2;
   
+  -- ADC
+  ADC_CS_N    <= iADC_CS_N;
+  ADC_SADDR   <= iADC_SADDR;
+  iADC_SDAT   <= ADC_SDAT;
+  ADC_SCLK    <= iADC_SCLK;
+  
+  -- FIXME : DEBUG ++
+  -- ADC DEBUG
+  --PWM_SERVO9  <= iADC_SADDR;
+  --PWM_SERVO10 <= iADC_CS_N;
+  --PWM_SERVO11 <= iADC_SCLK;
+  --PWM_SERVO12 <= iADC_SDAT;
+  -- FIXME : DEBUG --
+
   --core instantiation
   core_inst : core
     port map(
@@ -420,6 +450,12 @@ begin
       , pwm_servo9   => PWM_SERVO10
       , pwm_servo10  => PWM_SERVO11
       , pwm_servo11  => PWM_SERVO12
+      -- FIXME : DEBUG ++
+      --, pwm_servo8   => open
+      --, pwm_servo9   => open
+      --, pwm_servo10  => open
+      --, pwm_servo11  => open
+      -- FIXME : DEBUG --
 
       -- POMPES
 --      , pwm_pump0    => PWM_POMPE0
@@ -442,6 +478,12 @@ begin
       , stp_1_dir    => open
       , stp_switch0  => '0'
       , stp_switch1  => '0'
+
+      -- ADC signals
+      , adc_cs       => iADC_CS_N
+      , adc_sclk     => iADC_SCLK
+      , adc_din      => iADC_SADDR
+      , adc_dout     => iADC_SDAT
 
       -- GPIO_IN
       , gpio_in      => iGPIO_IN
