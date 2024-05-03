@@ -429,8 +429,8 @@ int main ()
         robot_reg[0x10f] = 0;
         robot_reg[0x111] = 0;
         robot_reg[0x113] = 0;
-        robot_reg[0x115] = 0;
-        robot_reg[0x117] = 0;
+        robot_reg[0x115] = 0x4000;
+        robot_reg[0x117] = 0x4000;
         /* turn off all motors */
         robot_reg[0x121] = 0;
         robot_reg[0x123] = 0;
