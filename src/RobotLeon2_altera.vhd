@@ -69,7 +69,6 @@ entity RobotLeon2_altera is
 
     -- GPIOs
     ; GPIO_0_IN0          : in std_logic
-
     ; GPIO_0_IN1          : in std_logic
 
     ; GPIO_000            : in std_logic
@@ -82,6 +81,10 @@ entity RobotLeon2_altera is
     ; GPIO_007            : in std_logic
     ; GPIO_008            : in std_logic
     ; GPIO_009            : in std_logic
+
+    ; GPIO_011            : in std_logic
+
+    ; GPIO_013            : in std_logic
 
     ; GPIO_014            : in std_logic
     ; GPIO_015            : in std_logic
