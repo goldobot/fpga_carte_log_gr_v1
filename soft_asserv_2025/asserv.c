@@ -35,13 +35,13 @@ void init_asserv (struct _goldo_asserv *_ga, uint32_t _mot_reg, uint32_t _enc_re
   _ga->conf_polar = _polar;
 #else
   /* ROBOT 2025 .. */
-  _ga->conf_max_range = 0x8000; /* should be < 0xa000 */
-  _ga->conf_pwm_clamp = 0x60;
-  _ga->conf_goto_speed = 40;
-  _ga->conf_Kp = 0x00010000;
-  _ga->conf_Ki = 0x00000400;
-  _ga->conf_Kd = 0x00010000;
-  _ga->conf_block_trig = 80;
+  _ga->conf_max_range = 0xf980;
+  _ga->conf_pwm_clamp = 0x180;
+  _ga->conf_goto_speed = 0x200;
+  _ga->conf_Kp = 0x00008000;
+  _ga->conf_Ki = 0x00000200;
+  _ga->conf_Kd = 0x0000a000;
+  _ga->conf_block_trig = 0x80;
   _ga->home_dir = _home_dir;
   _ga->conf_polar = _polar;
 #endif
@@ -57,6 +57,7 @@ void init_asserv (struct _goldo_asserv *_ga, uint32_t _mot_reg, uint32_t _enc_re
   _ga->st_asserv_sigma_err = 0;
   _ga->st_asserv_output = 0;
   _ga->st_block_cnt = 0;
+  _ga->st_homing_cnt = 0;
   _ga->st_debug_ts = 0;
 
   _ga->mot_reg = _mot_reg;
@@ -207,7 +208,9 @@ void process_asserv_cmd (struct _goldo_asserv *_ga)
     {
       uint32_t new_max_range = (cmd_param & 0x0fff0000)>>16;
       uint32_t new_pwm_clamp = cmd_param & 0x0000ffff;
+#if 0 /* FIXME : TODO : disabled in 2025 : doesn't fit in 12b!.. */
       if (new_max_range!=0) _ga->conf_max_range = new_max_range;
+#endif
       if (new_pwm_clamp!=0) _ga->conf_pwm_clamp = new_pwm_clamp;
     }
     cmd_ok = 1;
@@ -306,6 +309,15 @@ void do_step_asserv (struct _goldo_asserv *_ga)
     if (_ga->st_asserv_output>conf_pwm_clamp) _ga->st_asserv_output=conf_pwm_clamp;
     if (_ga->st_asserv_output<-conf_pwm_clamp) _ga->st_asserv_output=-conf_pwm_clamp;
 
+#if 1 /* FIXME : DEBUG : protection en fin de course.. */
+    if (_ga->st_abs_pos < (0x200 + _ga->st_homing_abs_pos - _ga->conf_max_range)) 
+    {
+      int zero_pwm_clamp = 0x14;
+      //if (_ga->st_asserv_output>zero_pwm_clamp) _ga->st_asserv_output=zero_pwm_clamp;
+      if (_ga->st_asserv_output<-zero_pwm_clamp) _ga->st_asserv_output=-zero_pwm_clamp;
+    } 
+#endif
+
     //robot_reg[mot_reg] = (unsigned int) _ga->st_asserv_output;
     robot_reg[mot_reg] = polar * _ga->st_asserv_output;
 
@@ -317,32 +329,49 @@ void do_step_asserv (struct _goldo_asserv *_ga)
   }
 
   /* homing */
-  if ((_ga->flags & GA_FLAG_AT_HOME)!=0)
-    _ga->flags = _ga->flags | GA_FLAG_AT_HOME_PREV;
-  else
-    _ga->flags = _ga->flags & (~GA_FLAG_AT_HOME_PREV);
-
-  my_val32 = robot_reg[sw_reg];
-  if ((my_val32&sw_mask)==0) /* /!\ HW 2022 : 0=ON ; 1=OFF  */
-    _ga->flags = _ga->flags | GA_FLAG_AT_HOME;
-  else
-    _ga->flags = _ga->flags & (~GA_FLAG_AT_HOME);
-
-  if (((_ga->flags & GA_FLAG_AT_HOME_PREV)==0) && ((_ga->flags & GA_FLAG_AT_HOME)!=0))
+  if (_ga->st_homing_cnt>0)
   {
-    //uart_putchar ( '.' );
-    //uart_putchar ( 0xa );
     if (asserv_state_is (_ga, GA_STATE_HOMING))
     {
-      _ga->st_homing_abs_pos = _ga->st_abs_pos;
-      _ga->flags = _ga->flags | GA_FLAG_HOMING_DONE;
-      _ga->st_abs_target = _ga->st_abs_pos;
-      _ga->st_abs_target_final = _ga->st_abs_target;
-      asserv_state_set (_ga, GA_STATE_HOLD_POS);
-      //uart_printhex ( ga->st_homing_abs_pos );
-      //uart_putchar ( 0xa );
+      robot_reg[_ga->mot_reg] = - _ga->home_dir * _ga->conf_polar * _ga->conf_pwm_clamp/6;
     }
-    //robot_reg[mot_reg] = 0;
+
+    _ga->st_homing_cnt--;
+  } 
+  else 
+  {
+    if (asserv_state_is (_ga, GA_STATE_HOMING))
+    {
+      robot_reg[_ga->mot_reg] = _ga->home_dir * _ga->conf_polar * _ga->conf_pwm_clamp/6;
+    }
+
+    if ((_ga->flags & GA_FLAG_AT_HOME)!=0)
+      _ga->flags = _ga->flags | GA_FLAG_AT_HOME_PREV;
+    else
+      _ga->flags = _ga->flags & (~GA_FLAG_AT_HOME_PREV);
+
+    my_val32 = robot_reg[sw_reg];
+    if ((my_val32&sw_mask)==0) /* /!\ HW 2022 : 0=ON ; 1=OFF  */
+      _ga->flags = _ga->flags | GA_FLAG_AT_HOME;
+    else
+      _ga->flags = _ga->flags & (~GA_FLAG_AT_HOME);
+
+    if (((_ga->flags & GA_FLAG_AT_HOME_PREV)==0) && ((_ga->flags & GA_FLAG_AT_HOME)!=0))
+    {
+      //uart_putchar ( '.' );
+      //uart_putchar ( 0xa );
+      if (asserv_state_is (_ga, GA_STATE_HOMING))
+      {
+        _ga->st_homing_abs_pos = _ga->st_abs_pos;
+        _ga->flags = _ga->flags | GA_FLAG_HOMING_DONE;
+        _ga->st_abs_target = _ga->st_abs_pos;
+        _ga->st_abs_target_final = _ga->st_abs_target;
+        asserv_state_set (_ga, GA_STATE_HOLD_POS);
+        //uart_printhex ( ga->st_homing_abs_pos );
+        //uart_putchar ( 0xa );
+      }
+      //robot_reg[mot_reg] = 0;
+    }
   }
 
   /* detection du blockage */
@@ -453,10 +482,21 @@ int go_to_rel_target (struct _goldo_asserv *_ga, int _target)
 void start_homing (struct _goldo_asserv *_ga)
 {
   volatile uint32_t* robot_reg = ( volatile int* ) ROBOT_BASE_ADDR;
+  uint32_t sw_reg  = _ga->sw_reg;
+  uint32_t sw_mask = _ga->sw_mask;
+  uint32_t my_val32;
 
+  my_val32 = robot_reg[sw_reg];
+  if ((my_val32&sw_mask)==0) /* /!\ HW 2022 : 0=ON ; 1=OFF  */
+  {
+    _ga->st_homing_cnt = 20;
+  }
+  else
+  {
+    _ga->st_homing_cnt = 0;
+  }
   _ga->flags = _ga->flags & (~GA_FLAG_HOMING_DONE);
   asserv_state_set (_ga, GA_STATE_HOMING);
-  robot_reg[_ga->mot_reg] = _ga->home_dir * _ga->conf_polar * _ga->conf_pwm_clamp/3;
 }
 
 

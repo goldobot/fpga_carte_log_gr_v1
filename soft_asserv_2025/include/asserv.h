@@ -64,6 +64,7 @@ typedef struct _goldo_asserv {
   int st_asserv_sigma_err;
   int st_asserv_output;
   int st_block_cnt;
+  int st_homing_cnt;
   int st_debug_ts;
 
   uint32_t mot_reg;
