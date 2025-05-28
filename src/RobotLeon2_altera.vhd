@@ -498,20 +498,15 @@ begin
       , debug_test   => debug_test
       );
 
-  -- GPIO Audran :                           GPIO_2_IN0 & GPIO_2_IN2 &
-  --               GPIO_2_IN1 & GPIO_200   & GPIO_210   & GPIO_212   &
-  --               GPIO_211   & GPIO_106   & GPIO_104   & GPIO_105   &
-  --               GPIO_103   & GPIO_102   & GPIO_005   & GPIO_004   &
-  --               GPIO_007   & GPIO_006   & GPIO_009   & GPIO_008   &
-  --               GPIO_101   & GPIO_1_IN1 & GPIO_100   & GPIO_1_IN0
+  -- GPIO Audran : 
   gpio_audran_proc : process( n_reset, clk_o )
   begin
     if ( n_reset = '0' ) then
       iGPIO_IN <= (others => '0');
     elsif rising_edge( clk_o ) then
-      iGPIO_IN <= "0000" & 
-                  "0000" & 
-                  '0'         & '0'        & GPIO_2_IN0 & GPIO_2_IN2 & 
+      iGPIO_IN <=  GPIO_011   & GPIO_013   & GPIO_201   & GPIO_202   & 
+                   GPIO_203   & GPIO_204   & GPIO_205   & GPIO_206   & 
+                   GPIO_207   & GPIO_208   & GPIO_2_IN0 & GPIO_2_IN2 & 
                    GPIO_2_IN1 & GPIO_200   & GPIO_210   & GPIO_212   & 
                    GPIO_211   & GPIO_106   & GPIO_104   & GPIO_105   & 
                    GPIO_103   & GPIO_102   & GPIO_005   & GPIO_004   & 

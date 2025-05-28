@@ -351,7 +351,7 @@ void do_step_asserv (struct _goldo_asserv *_ga)
       _ga->flags = _ga->flags & (~GA_FLAG_AT_HOME_PREV);
 
     my_val32 = robot_reg[sw_reg];
-    if ((my_val32&sw_mask)==0) /* /!\ HW 2022 : 0=ON ; 1=OFF  */
+    if ((my_val32&sw_mask)==1) /* /!\ HW 2025 : 0=OFF ; 1=ON  */
       _ga->flags = _ga->flags | GA_FLAG_AT_HOME;
     else
       _ga->flags = _ga->flags & (~GA_FLAG_AT_HOME);
@@ -487,7 +487,7 @@ void start_homing (struct _goldo_asserv *_ga)
   uint32_t my_val32;
 
   my_val32 = robot_reg[sw_reg];
-  if ((my_val32&sw_mask)==0) /* /!\ HW 2022 : 0=ON ; 1=OFF  */
+  if ((my_val32&sw_mask)==1) /* /!\ HW 2025 : 0=OFF ; 1=ON  */
   {
     _ga->st_homing_cnt = 20;
   }
