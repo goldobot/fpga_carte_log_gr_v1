@@ -403,7 +403,7 @@ int main ()
         robot_sync_barrier = robot_timer_val + ROBOT_SAMPLING_INT;
       }
 
-#if 1 /* FIXME : DEBUG : (elec eclatee sans arret d'urgence) */
+#if 0 /* FIXME : DEBUG : (elec eclatee sans arret d'urgence) */
       if ((robot_reg[R_ROBOT_GPIO]&0x00000008)==0x00000008) { /* power reset */
         reset_asserv();
         /* turn off all servos */
