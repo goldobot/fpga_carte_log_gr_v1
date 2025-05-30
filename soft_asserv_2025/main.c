@@ -218,6 +218,7 @@ struct _goldo_asserv ga_left;
 
 void reset_asserv ()
 {
+#if 0 /* OLD */
   init_asserv (&ga_left, 
                /* _mot_reg */ 0x125, 
                /* _enc_reg */ 0x81,
@@ -229,6 +230,19 @@ void reset_asserv ()
                /* _sw_mask */ 0x00008000, /* CaptTOR_7 */
                /* _home_dir*/ 1,
                /* _polar   */ 1);
+#else /* 2025 */
+  init_asserv (&ga_left, 
+               /* _mot_reg */ 0x125, 
+               /* _enc_reg */ 0x81,
+               /* _cmd_reg */ 0x140, 
+               /* _sta_reg */ 0x141, 
+               /* _pos_reg */ 0x142, 
+               /* _dbg_reg */ 0x143, 
+               /* _sw_reg  */ 0x139, 
+               /* _sw_mask */ 0x00008000, /* CaptTOR_7 */
+               /* _home_dir*/ 1,
+               /* _polar   */ -1);
+#endif
 }
 
 int main ()
