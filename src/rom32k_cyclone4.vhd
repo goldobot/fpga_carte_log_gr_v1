@@ -1637,7 +1637,7 @@ architecture rtl of rom32k is
     bit_vector'(X"C223A064"),
     bit_vector'(X"82102001"),
     bit_vector'(X"C223A068"),
-    bit_vector'(X"82103FFF"),
+    bit_vector'(X"82102001"),
     bit_vector'(X"C223A06C"),
     bit_vector'(X"03100000"),
     bit_vector'(X"90106188"),

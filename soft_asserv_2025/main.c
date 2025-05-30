@@ -241,7 +241,7 @@ void reset_asserv ()
                /* _sw_reg  */ 0x139, 
                /* _sw_mask */ 0x00008000, /* CaptTOR_7 */
                /* _home_dir*/ 1,
-               /* _polar   */ -1);
+               /* _polar   */ 1);
 #endif
 }
 
