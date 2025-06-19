@@ -270,6 +270,8 @@ void do_step_asserv (struct _goldo_asserv *_ga)
   /* echelon de vitesse + detection de fin de traj (TODO : rampe de vitesse) */
   if (asserv_state_is (_ga, GA_STATE_GOTO_POS))
   {
+    uint32_t goto_speed = _ga->conf_goto_speed;
+
     /* incrementation de la consigne de position */
     if (abs(_ga->st_abs_target-_ga->st_abs_target_final)<_ga->conf_goto_speed)
     {
@@ -310,11 +312,17 @@ void do_step_asserv (struct _goldo_asserv *_ga)
     if (_ga->st_asserv_output<-conf_pwm_clamp) _ga->st_asserv_output=-conf_pwm_clamp;
 
 #if 1 /* FIXME : DEBUG : protection en fin de course.. */
-    if (_ga->st_abs_pos < (0x200 + _ga->st_homing_abs_pos - _ga->conf_max_range)) 
+    if (_ga->st_abs_pos < (0x400 + _ga->st_homing_abs_pos - _ga->conf_max_range)) 
     {
       int zero_pwm_clamp = 0x14;
       //if (_ga->st_asserv_output>zero_pwm_clamp) _ga->st_asserv_output=zero_pwm_clamp;
       if (_ga->st_asserv_output<-zero_pwm_clamp) _ga->st_asserv_output=-zero_pwm_clamp;
+    } 
+    if (_ga->st_abs_pos > (_ga->st_homing_abs_pos - 0x400)) 
+    {
+      int zero_pwm_clamp = 0x14;
+      if (_ga->st_asserv_output>zero_pwm_clamp) _ga->st_asserv_output=zero_pwm_clamp;
+      //if (_ga->st_asserv_output<-zero_pwm_clamp) _ga->st_asserv_output=-zero_pwm_clamp;
     } 
 #endif
 
@@ -333,7 +341,7 @@ void do_step_asserv (struct _goldo_asserv *_ga)
   {
     if (asserv_state_is (_ga, GA_STATE_HOMING))
     {
-      robot_reg[_ga->mot_reg] = - _ga->home_dir * _ga->conf_polar * _ga->conf_pwm_clamp/6;
+      robot_reg[_ga->mot_reg] = - _ga->home_dir * _ga->conf_polar * _ga->conf_pwm_clamp/4;
     }
 
     _ga->st_homing_cnt--;
